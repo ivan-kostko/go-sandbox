@@ -106,101 +106,101 @@ func GetNewLogContainer(intLog func(level Level, args ...interface{})) ILogger {
 
 // Emergency logs with an emergency level
 func (lc *LogContainer) Emergency(args ...interface{}) {
-	lc.Log(Emergency, args)
+	lc.Log(Emergency, args...)
 }
 
 // Emergencyf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Emergencyf(format string, args ...interface{}) {
-	lc.Log(Emergency, fmt.Sprintf(format, args))
+	lc.Log(Emergency, fmt.Sprintf(format, args...))
 }
 
 // Alert logs with an emergency level
 func (lc *LogContainer) Alert(args ...interface{}) {
-	lc.Log(Alert, args)
+	lc.Log(Alert, args...)
 }
 
 // Alertf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Alertf(format string, args ...interface{}) {
-	lc.Log(Alert, fmt.Sprintf(format, args))
+	lc.Log(Alert, fmt.Sprintf(format, args...))
 }
 
 // Critical logs with an emergency level
 func (lc *LogContainer) Critical(args ...interface{}) {
-	lc.Log(Critical, args)
+	lc.Log(Critical, args...)
 }
 
 // Criticalf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Criticalf(format string, args ...interface{}) {
-	lc.Log(Critical, fmt.Sprintf(format, args))
+	lc.Log(Critical, fmt.Sprintf(format, args...))
 }
 
 // Error logs with an emergency level
 func (lc *LogContainer) Error(args ...interface{}) {
-	lc.Log(Error, args)
+	lc.Log(Error, args...)
 }
 
 // Errorf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Errorf(format string, args ...interface{}) {
-	lc.Log(Error, fmt.Sprintf(format, args))
+	lc.Log(Error, fmt.Sprintf(format, args...))
 }
 
 // Warning logs with an emergency level
 func (lc *LogContainer) Warning(args ...interface{}) {
-	lc.Log(Warning, args)
+	lc.Log(Warning, args...)
 }
 
 // Warningf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Warningf(format string, args ...interface{}) {
-	lc.Log(Warning, fmt.Sprintf(format, args))
+	lc.Log(Warning, fmt.Sprintf(format, args...))
 }
 
 // Notice logs with an emergency level
 func (lc *LogContainer) Notice(args ...interface{}) {
-	lc.Log(Notice, args)
+	lc.Log(Notice, args...)
 }
 
 // Noticef logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Noticef(format string, args ...interface{}) {
-	lc.Log(Notice, fmt.Sprintf(format, args))
+	lc.Log(Notice, fmt.Sprintf(format, args...))
 }
 
 // Info logs with an emergency level
 func (lc *LogContainer) Info(args ...interface{}) {
-	lc.Log(Info, args)
+	lc.Log(Info, args...)
 }
 
 // Infof logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Infof(format string, args ...interface{}) {
-	lc.Log(Info, fmt.Sprintf(format, args))
+	lc.Log(Info, fmt.Sprintf(format, args...))
 }
 
 // Debug logs with an emergency level
 func (lc *LogContainer) Debug(args ...interface{}) {
-	lc.Log(Debug, args)
+	lc.Log(Debug, args...)
 }
 
 // Debugf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Debugf(format string, args ...interface{}) {
-	lc.Log(Debug, fmt.Sprintf(format, args))
+	lc.Log(Debug, fmt.Sprintf(format, args...))
 }
 
 // Log logs with an emergency level
 func (lc *LogContainer) Log(level Level, args ...interface{}) {
-	lc.internalLogFunction(level, args)
+	lc.internalLogFunction(level, args...)
 }
 
 // Logf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
 func (lc *LogContainer) Logf(level Level, format string, args ...interface{}) {
-	lc.Log(level, fmt.Sprintf(format, args))
+	lc.Log(level, fmt.Sprintf(format, args...))
 }
 
 // Represents configuration to create a new Logger
