@@ -7,6 +7,10 @@ import (
 	"fmt"
 )
 
+const (
+	ERR_FAILEDTOINSTANTIATEDEFAULTLOGGER = "Failed to instantiate default logger"
+)
+
 //go:generate stringer -type=Level
 
 // Level specifies a level of severity. The available levels are the eight severities described in RFC 5424 and None
@@ -206,4 +210,14 @@ func (lc *LogContainer) Logf(level Level, format string, args ...interface{}) {
 // Represents configuration to create a new Logger
 type LoggerConfig struct {
 	Prefix string
+}
+
+// ILogger fabric
+// Returns ILogger set up based on provided configuration
+// NB : For the moment it returns logger printing to terminal independent on configuration.
+func GetILogger(conf LoggerConfig) ILogger {
+	if conf == (LoggerConfig{}) {
+		return GetStdTerminalLogger()
+	}
+	return GetStdTerminalLogger()
 }

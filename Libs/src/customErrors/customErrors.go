@@ -30,8 +30,8 @@ func (e Error) Error() string {
 }
 
 // Error fabric
-func NewError(typ ErrorType, msg string, severity int) Error {
-	return Error{
+func NewError(typ ErrorType, msg string) *Error {
+	return &Error{
 		Type:    typ,
 		Message: msg,
 	}
