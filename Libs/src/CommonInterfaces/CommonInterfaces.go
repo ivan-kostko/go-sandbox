@@ -1,4 +1,4 @@
-// CommonInterfaces project CommonInterfaces.go
+// commonInterfaces project commonInterfaces.go
 // The package contains commenly used interfaces
 package commonInterfaces
 
@@ -9,11 +9,11 @@ import (
 // Interface represents Initialize methood
 type Initializer interface {
 	// The method sets up instance and returns error if instance won't be initialized
-	Initialize() Error
+	Initialize() *Error
 }
 
 // Interface represents MustInitialize methood
-type Initializer interface {
+type MustInitializer interface {
 	// The method sets up instance and panics if instance won't be initialized
 	MustInitialize()
 }
