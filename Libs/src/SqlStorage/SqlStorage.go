@@ -48,6 +48,7 @@ type ISqlStorage interface {
 // Returns *Error in case of nil configuration or problems on obtaining Logger or error on Initialization
 func GetNewISqlStorage(conf SqlStorageConfiguration, log Logger.ILogger) (ISqlStorage, *Error) {
 	if log == nil {
+		// try to get default logger
 		log = Logger.GetILogger(Logger.LoggerConfig{})
 	}
 	iss := &SqlStorage{log: log, conf: &conf}
