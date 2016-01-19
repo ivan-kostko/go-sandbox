@@ -101,7 +101,7 @@ type LogContainer struct {
 	internalLogFunction func(level Level, args ...interface{})
 }
 
-// LogContainer fabric
+// LogContainer factory
 func GetNewLogContainer(intLog func(level Level, args ...interface{})) ILogger {
 	lc := new(LogContainer)
 	lc.internalLogFunction = intLog
@@ -212,7 +212,7 @@ type LoggerConfig struct {
 	Prefix string
 }
 
-// ILogger fabric
+// ILogger factory
 // Returns ILogger set up based on provided configuration
 // NB : For the moment it returns logger printing to terminal independent on configuration.
 func GetILogger(conf LoggerConfig) ILogger {

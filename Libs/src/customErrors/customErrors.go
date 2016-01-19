@@ -29,7 +29,7 @@ func (e Error) Error() string {
 	return fmt.Sprintf("%T{Type:%s, Message:%s}", e, e.Type, e.Message)
 }
 
-// Error fabric
+// Error factory
 func NewError(typ ErrorType, msg string) *Error {
 	return &Error{
 		Type:    typ,
