@@ -8,20 +8,20 @@ import (
 func BenchmarkMap(b *testing.B) {
 	m := make(map[reflect.Type]string, 5)
 	m[reflect.TypeOf("")] = "string"
-	//	m[reflect.TypeOf(5)] = "integer"
-	//	m[reflect.TypeOf(5.001)] = "float"
-	//	m[reflect.TypeOf(true)] = "bit"
-	//	m[reflect.TypeOf([]byte(nil))] = "binary"
+	m[reflect.TypeOf(5)] = "integer"
+	m[reflect.TypeOf(5.001)] = "float"
+	m[reflect.TypeOf(true)] = "bit"
+	m[reflect.TypeOf([]byte(nil))] = "binary"
 
 	fn := func(i interface{}) string { return m[reflect.TypeOf(i)] }
 
 	b.ResetTimer()
 	for n := 0; n <= b.N; n++ {
 		s := fn("")
-		//		s = fn(5)
-		//		s = fn(5.001)
-		// s = fn(true)
-		//		s = fn([]byte(nil))
+		s = fn(5)
+		s = fn(5.001)
+		s = fn(true)
+		s = fn([]byte(nil))
 		s += ""
 	}
 	b.ReportAllocs()
@@ -55,10 +55,10 @@ func BenchmarkTypeSwitch(b *testing.B) {
 
 	for n := 0; n <= b.N; n++ {
 		s := fn("")
-		//		s = fn(5)
-		//		s = fn(5.001)
-		//		s = fn(true)
-		//		s = fn([]byte(nil))
+		s = fn(5)
+		s = fn(5.001)
+		s = fn(true)
+		s = fn([]byte(nil))
 		s += ""
 	}
 	b.ReportAllocs()
