@@ -3,6 +3,7 @@ package MySendBox
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestConvertBySwitch(t *testing.T) {
@@ -11,16 +12,49 @@ func TestConvertBySwitch(t *testing.T) {
 	if actual != expected {
 		t.Errorf("ConvertBySwitch empty string returned %v while expected %v ", actual, expected)
 	}
+	expected = "string"
+	xst := "blabla"
+	actual = ConvertBySwitch(&xst)
+	if actual != expected {
+		t.Errorf("ConvertBySwitch empty string returned %v while expected %v ", actual, expected)
+	}
+
 	expected = "integer"
 	actual = ConvertBySwitch(5)
 	if actual != expected {
 		t.Errorf("ConvertBySwitch(5) returned %v while expected %v ", actual, expected)
 	}
+	expected = "integer"
+	xin := 5
+	actual = ConvertBySwitch(&xin)
+	if actual != expected {
+		t.Errorf("ConvertBySwitch(5) returned %v while expected %v ", actual, expected)
+	}
+
 	expected = "float"
-	actual = ConvertBySwitch(5.001)
+	actual = ConvertBySwitch(float32(5.001))
 	if actual != expected {
 		t.Errorf("ConvertBySwitch(5.001) returned %v while expected %v ", actual, expected)
 	}
+	expected = "float"
+	xfl := 5.0001
+	actual = ConvertBySwitch(&xfl)
+	if actual != expected {
+		t.Errorf("ConvertBySwitch(5.001) returned %v while expected %v ", actual, expected)
+	}
+
+	expected = "time"
+	actual = ConvertBySwitch(time.Now())
+	if actual != expected {
+		t.Errorf("ConvertBySwitch(5.001) returned %v while expected %v ", actual, expected)
+	}
+	expected = "time"
+	xtm := time.Now()
+	actual = ConvertBySwitch(&xtm)
+	if actual != expected {
+		t.Errorf("ConvertBySwitch(5.001) returned %v while expected %v ", actual, expected)
+	}
+
 	expected = "bit"
 	actual = ConvertBySwitch(true)
 	if actual != expected {
@@ -63,6 +97,38 @@ func BenchmarkTypeSwitch(b *testing.B) {
 		s = ConvertBySwitch(5.001)
 		s = ConvertBySwitch(true)
 		s = ConvertBySwitch([]byte(nil))
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertIntToStringBySprintf(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertIntToStringBySprintf(n)
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertIntToStringByStrConv(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertIntToStringByStrConv(n)
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertFloatToStringBySprintf(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertFloatToStringBySprintf(26535141592653.1415926)
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertFloatToStringByStrConv(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertFloatToStringByStrConv(26535141592653.1415926)
 		s += ""
 	}
 	b.ReportAllocs()

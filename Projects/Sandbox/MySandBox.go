@@ -3,6 +3,8 @@ package MySendBox
 import (
 	"fmt"
 	"reflect"
+	"strconv"
+	"time"
 )
 
 var FuncMap map[reflect.Type]func(interface{}) string
@@ -32,20 +34,57 @@ func ConvertBySwitch(i interface{}) string {
 	case string:
 		return FuncForString(x) /*"string"*/
 		break
+	case *string:
+		return FuncForString(*x) /*"string"*/
+		break
 	case int:
 		return FuncForInteger(x) /* "integer"*/
+		break
+	case *int:
+		return FuncForInteger(*x) /* "integer"*/
 		break
 	case float64:
 		return FuncForFloat(x) /*"float"*/
 		break
+	case *float64:
+		return FuncForFloat(*x) /*"float"*/
+		break
+	case float32:
+		return FuncForFloat(x) /*"float"*/
+		break
+	case *float32:
+		return FuncForFloat(*x) /*"float"*/
+		break
+	case time.Time:
+		return "time"
+		break
+	case *time.Time:
+		return "time"
+		break
 	case bool:
-		return FuncForBool(x) /*"bit"*/
+		return FuncForBool(x)
 		break
 	case []byte:
-		return FuncForBytes(x) /*"binary"*/
+		return FuncForBytes(x)
 		break
 	default:
 		return fmt.Sprintf("DEFAULT: %T %#v", x, x)
 	}
 	return ""
+}
+
+func ConvertIntToStringBySprintf(i int) string {
+	return fmt.Sprintf("%v", i)
+}
+
+func ConvertIntToStringByStrConv(i int) string {
+	return strconv.Itoa(i)
+}
+
+func ConvertFloatToStringBySprintf(i float64) string {
+	return fmt.Sprintf("%f64", i)
+}
+
+func ConvertFloatToStringByStrConv(i float64) string {
+	return strconv.FormatFloat(i, 'f', -1, 32)
 }
