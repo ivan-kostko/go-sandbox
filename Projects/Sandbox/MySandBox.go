@@ -128,5 +128,5 @@ func GenerateFmtSprintf(tableName, columnList, valuesList string) string {
 }
 
 func GenerateCustom(tableName, columnList, valuesList string) string {
-	return "INSERT INTO {" + tableName + " (" + columnList + ") VALUES(" + valuesList + ")"
+	return "INSERT INTO " + tableName + " (" + columnList + ") VALUES(" + valuesList + ")"
 }

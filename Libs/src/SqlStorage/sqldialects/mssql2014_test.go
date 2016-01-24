@@ -170,3 +170,26 @@ func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
 	}
 
 }
+
+func TestBuildMSSQL2014InsertSqlScriptString(t *testing.T) {
+	var tableName, columnList, valuesList SqlScriptString = "dbo.TestTable", "Col1, Col2, Col3", "N'Value''1', Value3, Value4"
+	expected := SqlScriptString("INSERT INTO dbo.TestTable(Col1, Col2, Col3) VALUES(N'Value''1', Value3, Value4)")
+	actual := buildMSSQL2014InsertSqlScriptString(tableName, columnList, valuesList)
+	if actual != expected {
+		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
+	}
+}
+
+func TestBuildMSSQL2014SelectSqlScriptString(t *testing.T) {
+	var tableName, columnList, whereList SqlScriptString = "dbo.TestTable", "Col1, Col2, Col3", "Col1 = N'Value''1' AND Col2 < Value3 OR Col3 > Value4"
+	expected := SqlScriptString("SELECT Col1, Col2, Col3 FROM dbo.TestTable")
+	actual := buildMSSQL2014SelectSqlScriptString(tableName, columnList, "")
+	if actual != expected {
+		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
+	}
+	expected = SqlScriptString("SELECT Col1, Col2, Col3 FROM dbo.TestTable WHERE Col1 = N'Value''1' AND Col2 < Value3 OR Col3 > Value4")
+	actual = buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereList)
+	if actual != expected {
+		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
+	}
+}

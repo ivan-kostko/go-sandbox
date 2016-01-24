@@ -26,7 +26,11 @@ type MsSql2014Dialect struct {
 
 // MSSQL2014 dialect factory
 func GetMsSql2014Dialect() ISqlDialect {
-	return new(MsSql2014Dialect)
+	return &SqlDialect{
+		convertIntoSqlScriptString: convertSomethingIntoMssql2014SqlScriptString,
+		buildInsertSqlScriptString: buildMSSQL2014InsertSqlScriptString,
+	}
+
 }
 
 // converts input i into Sql Script string
@@ -104,4 +108,17 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 
 	return r, nil
 
+}
+
+// Builds Insert Sql Script(statement)
+func buildMSSQL2014InsertSqlScriptString(tableName, columnList, valuesList SqlScriptString) SqlScriptString {
+	return "INSERT INTO " + tableName + "(" + columnList + ") VALUES(" + valuesList + ")"
+}
+
+func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereList SqlScriptString) (query SqlScriptString) {
+	query = "SELECT " + columnList + " FROM " + tableName
+	if whereList != "" {
+		query += " WHERE " + whereList
+	}
+	return query
 }
