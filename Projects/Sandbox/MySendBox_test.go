@@ -138,3 +138,53 @@ func BenchmarkConvertFloatToStringByStrConv(b *testing.B) {
 	}
 	b.ReportAllocs()
 }
+
+func BenchmarkConvertInt64ToStringBySprintf(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertInt64ToStringBySprintf(9223372036854775807)
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertInt64ToStringByStrConv(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertInt64ToStringByStrConv(9223372036854775807)
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkConvertTimeToStringBySprintf(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertTimeToStringBySprintf(time.Now())
+		s += ""
+	}
+	b.ReportAllocs()
+
+}
+func BenchmarkConvertTimeToStringByForma(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertTimeToStringByFormat(time.Now())
+		s += ""
+	}
+	b.ReportAllocs()
+}
+func BenchmarkConvertTimeToStringByStringer(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := ConvertTimeToStringByStringer(time.Now())
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+/*
+func Benchmark(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s :=
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
+*/

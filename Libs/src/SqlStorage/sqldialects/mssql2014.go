@@ -7,11 +7,14 @@ import (
 	"encoding/hex"
 	"strconv"
 	"strings"
+	"time"
 )
 
-const MSSQL2014_DIALECT_REGISTER_NAME = "mssql2014"
-
-const MSSQL2014_DBNULL_SCRPT_STRING = "NULL"
+const (
+	MSSQL2014_DIALECT_REGISTER_NAME = "mssql2014"
+	MSSQL2014_DBNULL_SCRPT_STRING   = "NULL"
+	MSSQL2014_TIMEPARSE_TEMPLATE    = "20060102 15:04:05.99999999 Z07:00"
+)
 
 func init() {
 	d := GetMsSql2014Dialect()
@@ -46,6 +49,12 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 	case *int:
 		r = SqlScriptString(strconv.Itoa(*x))
 		break
+	case int64:
+		r = SqlScriptString(strconv.FormatInt(x, 10))
+		break
+	case *int64:
+		r = SqlScriptString(strconv.FormatInt(*x, 10))
+		break
 
 	case float32:
 		r = SqlScriptString(strconv.FormatFloat(float64(x), 'f', -1, 32))
@@ -58,6 +67,13 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		break
 	case *float64:
 		r = SqlScriptString(strconv.FormatFloat(*x, 'f', -1, 64))
+		break
+
+	case time.Time:
+		r = SqlScriptString("TRY_CAST('" + x.Format(MSSQL2014_TIMEPARSE_TEMPLATE) + "' AS DATETIMEOFFSET)")
+		break
+	case *time.Time:
+		r = SqlScriptString("TRY_CAST('" + x.Format(MSSQL2014_TIMEPARSE_TEMPLATE) + "' AS DATETIMEOFFSET)")
 		break
 
 	case bool:

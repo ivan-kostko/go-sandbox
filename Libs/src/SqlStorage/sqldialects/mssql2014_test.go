@@ -2,6 +2,7 @@ package SqlDialects
 
 import (
 	"testing"
+	"time"
 )
 
 func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
@@ -22,8 +23,8 @@ func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
 		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&str) returned `%#v` while expected `%#v`", actual, expected)
 	}
 
-	i := 5
-	expected = "5"
+	i := 2147483647
+	expected = "2147483647"
 	actual, err = convertSomethingIntoMssql2014SqlScriptString(i)
 	if err != nil {
 		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(i) returned unexpected error: %#v", err)
@@ -37,6 +38,23 @@ func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
 	}
 	if actual != expected {
 		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&i) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	bi := int64(9223372036854775807)
+	expected = "9223372036854775807"
+	actual, err = convertSomethingIntoMssql2014SqlScriptString(bi)
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(bi) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(bi) returned `%#v` while expected `%#v`", actual, expected)
+	}
+	actual, err = convertSomethingIntoMssql2014SqlScriptString(&bi)
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&bi) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&bi) returned `%#v` while expected `%#v`", actual, expected)
 	}
 
 	f32 := float32(2234.1235)
@@ -71,6 +89,23 @@ func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
 	}
 	if actual != expected {
 		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&f64) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	tm, _ := time.Parse(MSSQL2014_TIMEPARSE_TEMPLATE, "20150908 23:59:59.8888888 -02:30")
+	expected = "TRY_CAST('20150908 23:59:59.8888888 -02:30' AS DATETIMEOFFSET)"
+	actual, err = convertSomethingIntoMssql2014SqlScriptString(tm)
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(tm) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(tm) returned `%#v` while expected `%#v`", actual, expected)
+	}
+	actual, err = convertSomethingIntoMssql2014SqlScriptString(&tm)
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&tm) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(&tm) returned `%#v` while expected `%#v`", actual, expected)
 	}
 
 	b := true

@@ -93,3 +93,20 @@ func ConvertFloatToStringByStrConv(i float64) string {
 func ConvertBytesIntoSqlString(v []byte) string {
 	return "0x" + hex.EncodeToString(v)
 }
+
+func ConvertInt64ToStringBySprintf(i int64) string {
+	return fmt.Sprintf("%i64", i)
+}
+func ConvertInt64ToStringByStrConv(i int64) string {
+	return strconv.FormatInt(i, 10)
+}
+
+func ConvertTimeToStringBySprintf(i time.Time) string {
+	return fmt.Sprintf("%v", i)
+}
+func ConvertTimeToStringByFormat(i time.Time) string {
+	return i.Format("2006-01-02T15:04:05Z07:00")
+}
+func ConvertTimeToStringByStringer(i time.Time) string {
+	return i.String()
+}
