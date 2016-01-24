@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
+	//"text/template"
 	"time"
 )
 
@@ -109,4 +111,22 @@ func ConvertTimeToStringByFormat(i time.Time) string {
 }
 func ConvertTimeToStringByStringer(i time.Time) string {
 	return i.String()
+}
+
+const REPLACE_TEMPLATE1 = "INSERT INTO {{.TableName}} ({{.ColumnLins}}) VALUES({{.ValuesList}})"
+const REPLACE_TEMPLATE2 = "INSERT INTO %s (%s) VALUES(%s)"
+
+func GenerateStringsReplace(tableName, columnList, valuesList string) string {
+	r := strings.Replace(REPLACE_TEMPLATE1, "{{.TableName}}", tableName, -1)
+	r = strings.Replace(r, "{{.ColumnLins}}", columnList, -1)
+	r = strings.Replace(r, "{{.ValuesList}}", valuesList, -1)
+	return r
+}
+
+func GenerateFmtSprintf(tableName, columnList, valuesList string) string {
+	return fmt.Sprintf(REPLACE_TEMPLATE2, tableName, columnList, valuesList)
+}
+
+func GenerateCustom(tableName, columnList, valuesList string) string {
+	return "INSERT INTO {" + tableName + " (" + columnList + ") VALUES(" + valuesList + ")"
 }

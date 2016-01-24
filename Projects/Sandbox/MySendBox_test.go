@@ -178,6 +178,28 @@ func BenchmarkConvertTimeToStringByStringer(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkGenerateStringsReplace(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := GenerateStringsReplace("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
+		s += ""
+	}
+	b.ReportAllocs()
+}
+func BenchmarkGenerateFmtSprintf(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := GenerateFmtSprintf("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
+		s += ""
+	}
+	b.ReportAllocs()
+}
+func BenchmarkGenerateCustom(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := GenerateCustom("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
+		s += ""
+	}
+	b.ReportAllocs()
+}
+
 /*
 func Benchmark(b *testing.B) {
 	for n := 0; n <= b.N; n++ {
