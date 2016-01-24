@@ -1,6 +1,7 @@
 package MySendBox
 
 import (
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -87,4 +88,8 @@ func ConvertFloatToStringBySprintf(i float64) string {
 
 func ConvertFloatToStringByStrConv(i float64) string {
 	return strconv.FormatFloat(i, 'f', -1, 32)
+}
+
+func ConvertBytesIntoSqlString(v []byte) string {
+	return "0x" + hex.EncodeToString(v)
 }

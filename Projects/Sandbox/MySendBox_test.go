@@ -67,6 +67,11 @@ func TestConvertBySwitch(t *testing.T) {
 	}
 }
 
+func TestConvertBytesIntoSqlString(t *testing.T) {
+	v := []byte("Byte Test String")
+	t.Log(ConvertBytesIntoSqlString(v))
+}
+
 func BenchmarkMap(b *testing.B) {
 	FuncMap = make(map[reflect.Type]func(interface{}) string, 5)
 	FuncMap[reflect.TypeOf("")] = FuncForString
