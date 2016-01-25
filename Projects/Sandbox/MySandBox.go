@@ -130,3 +130,13 @@ func GenerateFmtSprintf(tableName, columnList, valuesList string) string {
 func GenerateCustom(tableName, columnList, valuesList string) string {
 	return "INSERT INTO " + tableName + " (" + columnList + ") VALUES(" + valuesList + ")"
 }
+
+func CustomJoinStrings(ss ...string) (r string) {
+	for i, s := range ss {
+		if i != 0 {
+			r += ","
+		}
+		r += s
+	}
+	return r
+}

@@ -115,10 +115,10 @@ func buildMSSQL2014InsertSqlScriptString(tableName, columnList, valuesList SqlSc
 	return "INSERT INTO " + tableName + "(" + columnList + ") VALUES(" + valuesList + ")"
 }
 
-func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereList SqlScriptString) (query SqlScriptString) {
+func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereStmt SqlScriptString) (query SqlScriptString) {
 	query = "SELECT " + columnList + " FROM " + tableName
-	if whereList != "" {
-		query += " WHERE " + whereList
+	if whereStmt != "" {
+		query += " WHERE " + whereStmt
 	}
 	return query
 }

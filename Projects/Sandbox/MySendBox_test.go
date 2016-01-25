@@ -2,6 +2,7 @@ package MySendBox
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -196,6 +197,22 @@ func BenchmarkGenerateCustom(b *testing.B) {
 	for n := 0; n <= b.N; n++ {
 		s := GenerateCustom("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
 		s += ""
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkCustomJoinStrings(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := CustomJoinStrings("a", "b", "c", "d", "e", "f", "j", "h", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "22", "3", "5", "777", "8", "9", "0", "1234567890qwertyuiopasdfghjkzxcvbnm")
+		_ = s
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkStringsJoinStrings(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		s := strings.Join([]string{"a", "b", "c", "d", "e", "f", "j", "h", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "22", "3", "5", "777", "8", "9", "0", "1234567890qwertyuiopasdfghjkzxcvbnm"}, ",")
+		_ = s
 	}
 	b.ReportAllocs()
 }
