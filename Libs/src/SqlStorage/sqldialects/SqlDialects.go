@@ -15,10 +15,21 @@ const (
 // NB: is lazy initialized (or in other words - initialized on demand)
 var supportedSqlDialects map[string]ISqlDialect
 
+// Sql Script / query string type
+type SqlScriptString string
+
+// Sql Dialect shared interface
 type ISqlDialect interface {
 }
 
-// The function registers dialect as supported
+// Implements ISqlDialect query generation functionality
+type SqlDialect struct {
+	convertIntoSqlScriptString func(interface{}) (SqlScriptString, *Error)
+	buildInsertSqlScriptString func(tableName, columnList, valuesList SqlScriptString) SqlScriptString
+	buildSelectSqlScriptString func(tableName, columnList, whereStmt SqlScriptString) SqlScriptString
+}
+
+// Registers dialect as supported
 func RegisterSupportOfDialect(alias string, dialect ISqlDialect) *Error {
 	if dialect == nil {
 		return NewError(InvalidArgument, ERR_NILDIALECT_REGISTER)
@@ -33,6 +44,7 @@ func RegisterSupportOfDialect(alias string, dialect ISqlDialect) *Error {
 	return nil
 }
 
+// Gets registered/supported dialect by alias. Returns error if alias is not found as registered
 func GetDialectByAlias(alias string) (ISqlDialect, *Error) {
 	if supportedSqlDialects == nil {
 		return nil, NewError(Nonsupported, ERR_NOONEDIALECT_REGISTERED)

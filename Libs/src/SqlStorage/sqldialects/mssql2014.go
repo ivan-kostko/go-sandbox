@@ -29,6 +29,7 @@ func GetMsSql2014Dialect() ISqlDialect {
 	return &SqlDialect{
 		convertIntoSqlScriptString: convertSomethingIntoMssql2014SqlScriptString,
 		buildInsertSqlScriptString: buildMSSQL2014InsertSqlScriptString,
+		buildSelectSqlScriptString: buildMSSQL2014SelectSqlScriptString,
 	}
 
 }
