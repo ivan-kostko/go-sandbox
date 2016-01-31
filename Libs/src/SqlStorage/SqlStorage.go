@@ -19,6 +19,8 @@ import (
 
 const (
 	ERR_FAILEDTOINITIALIZE_SQLSTORAGE = "Failed to initialize SqlStorage due to error "
+	ERR_FAILEDTOGETSTORAGEFIELDS      = "Failed to get storage object foelds"
+	ERR_FUNCNOTYETIMPLEMENTED         = "The function is not yet implemented"
 )
 
 type SqlStorageConfiguration struct {
@@ -34,6 +36,9 @@ type SqlStorage struct {
 	conf    *SqlStorageConfiguration
 	dialect SqlDialects.ISqlDialect
 	conn    *sqlx.DB // keeps connection pool active
+
+	structureMappings map[reflect.Type]StructureMapping
+	namesMatch        func(string, string) bool
 }
 
 // The interface represents embeded composition of implemented interfaces by SqlStorage struct
@@ -43,26 +48,7 @@ type ISqlStorage interface {
 	MustInitializer
 	Disposer
 
-	// Fills up model m with data from the first entry at database by:
-	// if atleast one of PK field is not nil - then by PK fields
-	// else by BK fields even if they are all nill
-	// NB: the real type of m should be registered upon the operation. Otherwise returns Notsupported *Error
-	Get(m interface{}) *Error
-
-	// Stores data from model m into database. Does not resolve any values by its own
-	// NB: the real type of m should be registered upon the operation. Otherwise returns Notsupported *Error
-	Put(m interface{}) *Error
-
-	// Tries to store data from model m into database
-	// If there are fields which are resolved on DB level(sequence, default values or calculated on DB level)
-	// fills up model with this values
-	Resolve(m interface{}) *Error
-
-	// Removes entry from database by:
-	// if atleast one of PK field is not nil - then by PK fields
-	// else by BK fields even if they are all nill
-	// NB: the real type of m should be registered upon the operation. Otherwise returns Notsupported *Error
-	Del(m interface{}) *Error
+	IStorage
 }
 
 // Generic (I)SqlStorage factory.
@@ -119,4 +105,42 @@ func (ss *SqlStorage) Dispose() {
 	ss.dialect = nil
 	// The log shouldn't be disposed by its own, cause it could be in use by other objects. Just remove reference to it
 	ss.log = nil
+}
+
+func (ss *SqlStorage) Get(m interface{}) *Error {
+	// TODO : Implement
+	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
+}
+
+func (ss *SqlStorage) Put(m interface{}) *Error {
+	// TODO : Implement
+	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
+}
+
+func (ss *SqlStorage) Resolve(m interface{}) *Error {
+	// TODO : Implement
+	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
+}
+
+func (ss *SqlStorage) Del(m interface{}) *Error {
+	// TODO : Implement
+	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
+}
+
+func (ss *SqlStorage) getStorageObjectFields(stObjName string) ([]string, *Error) {
+	r, err := ss.conn.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
+	if err != nil {
+		ss.log.Warning(err.Error())
+		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
+	}
+	if r == nil {
+		ss.log.Info("SelectAllColumns returned NIL result")
+		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
+	}
+	res, colErr := r.Columns()
+	if colErr != nil {
+		ss.log.Warning(colErr.Error())
+		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
+	}
+	return res, nil
 }

@@ -27,9 +27,10 @@ type MsSql2014Dialect struct {
 // MSSQL2014 dialect factory
 func GetMsSql2014Dialect() ISqlDialect {
 	return &SqlDialect{
-		convertIntoSqlScriptString: convertSomethingIntoMssql2014SqlScriptString,
-		buildInsertSqlScriptString: buildMSSQL2014InsertSqlScriptString,
-		buildSelectSqlScriptString: buildMSSQL2014SelectSqlScriptString,
+		convertIntoSqlScriptString:           convertSomethingIntoMssql2014SqlScriptString,
+		buildInsertSqlScriptString:           buildMSSQL2014InsertSqlScriptString,
+		buildSelectSqlScriptString:           buildMSSQL2014SelectSqlScriptString,
+		buildSelectAllColumnsSqlScriptString: buildMSSQL2014SelectAllColumnsSqlScriptString,
 	}
 
 }
@@ -116,10 +117,19 @@ func buildMSSQL2014InsertSqlScriptString(tableName, columnList, valuesList SqlSc
 	return "INSERT INTO " + tableName + "(" + columnList + ") VALUES(" + valuesList + ")"
 }
 
-func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereStmt SqlScriptString) (query SqlScriptString) {
-	query = "SELECT " + columnList + " FROM " + tableName
+// if limit <0 selects all
+func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereStmt SqlScriptString, limit int) (query SqlScriptString) {
+	limitStr := SqlScriptString("")
+	if limit >= 0 {
+		limitStr = SqlScriptString("TOP (" + strconv.Itoa(limit) + ") ")
+	}
+	query = "SELECT " + limitStr + columnList + " FROM " + tableName
 	if whereStmt != "" {
 		query += " WHERE " + whereStmt
 	}
 	return query
+}
+
+func buildMSSQL2014SelectAllColumnsSqlScriptString(tablename string) SqlScriptString {
+	return SqlScriptString("SELECT TOP(0) * FROM " + tablename)
 }

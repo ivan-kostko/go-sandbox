@@ -20,13 +20,21 @@ type SqlScriptString string
 
 // Sql Dialect shared interface
 type ISqlDialect interface {
+	BuildSelectAllColumnsSqlScriptString(tableName string) SqlScriptString
 }
 
 // Implements ISqlDialect query generation functionality
 type SqlDialect struct {
-	convertIntoSqlScriptString func(interface{}) (SqlScriptString, *Error)
-	buildInsertSqlScriptString func(tableName, columnList, valuesList SqlScriptString) SqlScriptString
-	buildSelectSqlScriptString func(tableName, columnList, whereStmt SqlScriptString) SqlScriptString
+	convertIntoSqlScriptString           func(interface{}) (SqlScriptString, *Error)
+	buildInsertSqlScriptString           func(tableName, columnList, valuesList SqlScriptString) SqlScriptString
+	buildSelectSqlScriptString           func(tableName, columnList, whereStmt SqlScriptString, limit int) SqlScriptString
+	buildSelectAllColumnsSqlScriptString func(tableName string) SqlScriptString
+}
+
+// Builds query to get empty resultset but with all columns
+// Usually is used for schema validation on mapping
+func (sd *SqlDialect) BuildSelectAllColumnsSqlScriptString(tableName string) SqlScriptString {
+	return sd.buildSelectAllColumnsSqlScriptString(tableName)
 }
 
 // Registers dialect as supported

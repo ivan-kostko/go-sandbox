@@ -183,12 +183,12 @@ func TestBuildMSSQL2014InsertSqlScriptString(t *testing.T) {
 func TestBuildMSSQL2014SelectSqlScriptString(t *testing.T) {
 	var tableName, columnList, whereList SqlScriptString = "dbo.TestTable", "Col1, Col2, Col3", "Col1 = N'Value''1' AND Col2 < Value3 OR Col3 > Value4"
 	expected := SqlScriptString("SELECT Col1, Col2, Col3 FROM dbo.TestTable")
-	actual := buildMSSQL2014SelectSqlScriptString(tableName, columnList, "")
+	actual := buildMSSQL2014SelectSqlScriptString(tableName, columnList, "", -1)
 	if actual != expected {
 		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
 	}
-	expected = SqlScriptString("SELECT Col1, Col2, Col3 FROM dbo.TestTable WHERE Col1 = N'Value''1' AND Col2 < Value3 OR Col3 > Value4")
-	actual = buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereList)
+	expected = SqlScriptString("SELECT TOP (7) Col1, Col2, Col3 FROM dbo.TestTable WHERE Col1 = N'Value''1' AND Col2 < Value3 OR Col3 > Value4")
+	actual = buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereList, 7)
 	if actual != expected {
 		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
 	}
