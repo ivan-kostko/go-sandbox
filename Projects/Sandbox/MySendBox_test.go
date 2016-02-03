@@ -1,6 +1,7 @@
 package MySendBox
 
 import (
+	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
@@ -71,6 +72,30 @@ func TestConvertBySwitch(t *testing.T) {
 func TestConvertBytesIntoSqlString(t *testing.T) {
 	v := []byte("Byte Test String")
 	t.Log(ConvertBytesIntoSqlString(v))
+}
+
+func TestReflectFieldTags(t *testing.T) {
+	type MyTestType struct {
+		Field1 *int `db:"{'ColName':'Column1','ColName':'Column2', 'Key':'PK', 'Resolve':'ByDb'}"`
+		Field2 *string
+	}
+	//	type MppingTag struct {
+	//		ColName string
+	//		Key     string
+	//		Resolve string
+	//	}
+	mtt := MyTestType{}
+	c := reflect.TypeOf(mtt).NumField()
+	for fi := 0; fi < c; fi++ {
+		tag := reflect.TypeOf(mtt).Field(fi).Tag.Get("db")
+		t.Log(tag)
+		var m map[string]string
+		err := json.Unmarshal([]byte(strings.Replace(tag, "'", string('"'), -1)), &m)
+		if err != nil {
+			t.Log(err)
+		}
+		t.Log(m)
+	}
 }
 
 func BenchmarkMap(b *testing.B) {
@@ -213,6 +238,61 @@ func BenchmarkStringsJoinStrings(b *testing.B) {
 	for n := 0; n <= b.N; n++ {
 		s := strings.Join([]string{"a", "b", "c", "d", "e", "f", "j", "h", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "22", "3", "5", "777", "8", "9", "0", "1234567890qwertyuiopasdfghjkzxcvbnm"}, ",")
 		_ = s
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkReflectFieldById(b *testing.B) {
+	type MyTestType struct {
+		Field1 int
+		Field2 int
+		Field3 int
+	}
+	m := MyTestType{}
+	t := reflect.TypeOf(m)
+	b.Log(t.Field(1).Name)
+
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		v := reflect.ValueOf(reflect.ValueOf(m).Field(1))
+		_ = v
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkReflectFieldByIndex(b *testing.B) {
+	type MyTestType struct {
+		Field1 int
+		Field2 int
+		Field3 int
+	}
+	m := MyTestType{}
+	t := reflect.TypeOf(m)
+	b.Log(t.FieldByIndex([]int{1}).Name)
+
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		v := reflect.ValueOf(reflect.ValueOf(m).FieldByIndex([]int{1}))
+		_ = v
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkReflectFieldByName(b *testing.B) {
+	type MyTestType struct {
+		Field1 int
+		Field2 int
+		Field3 int
+	}
+	m := MyTestType{}
+	t := reflect.TypeOf(m)
+	x, _ := t.FieldByName("Field2")
+	b.Log(x.Name)
+
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		v := reflect.ValueOf(reflect.ValueOf(m).FieldByName("Field2"))
+		_ = v
 	}
 	b.ReportAllocs()
 }
