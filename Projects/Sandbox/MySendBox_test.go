@@ -76,25 +76,27 @@ func TestConvertBytesIntoSqlString(t *testing.T) {
 
 func TestReflectFieldTags(t *testing.T) {
 	type MyTestType struct {
-		Field1 *int `db:"{'ColName':'Column1','ColName':'Column2', 'Key':'PK', 'Resolve':'ByDb'}"`
+		Field1 *int `db:"{'ColName':'Column1','ColName':'Column2', 'Keys':['PK', 'BK'], 'ResolvedByDb':true}"`
 		Field2 *string
 	}
-	//	type MppingTag struct {
-	//		ColName string
-	//		Key     string
-	//		Resolve string
-	//	}
+	type TagJsonStruct struct {
+		ColName         string
+		Keys            []string
+		ResolvedByDb    bool
+		ConvertByDriver bool
+	}
 	mtt := MyTestType{}
 	c := reflect.TypeOf(mtt).NumField()
 	for fi := 0; fi < c; fi++ {
 		tag := reflect.TypeOf(mtt).Field(fi).Tag.Get("db")
 		t.Log(tag)
-		var m map[string]string
-		err := json.Unmarshal([]byte(strings.Replace(tag, "'", string('"'), -1)), &m)
+		var tgs *TagJsonStruct
+		tgs = new(TagJsonStruct)
+		err := json.Unmarshal([]byte(strings.Replace(tag, "'", string('"'), -1)), tgs)
 		if err != nil {
 			t.Log(err)
 		}
-		t.Log(m)
+		t.Log(*tgs)
 	}
 }
 

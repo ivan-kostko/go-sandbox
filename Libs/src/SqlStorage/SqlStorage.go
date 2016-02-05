@@ -27,6 +27,7 @@ type SqlStorageConfiguration struct {
 	DriverName   string
 	ConnString   string
 	DialectAlias string
+	MappingTag   string
 }
 
 // Represents generic abstract Sql storage
@@ -44,6 +45,7 @@ type SqlStorage struct {
 // The interface represents embeded composition of implemented interfaces by SqlStorage struct
 // and general SqlStorage functionality
 type ISqlStorage interface {
+	// Implements:
 	Initializer
 	MustInitializer
 	Disposer
@@ -127,7 +129,11 @@ func (ss *SqlStorage) Del(m interface{}) *Error {
 	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
 }
 
-func (ss *SqlStorage) getStorageObjectFields(stObjName string) ([]string, *Error) {
+type StorageObjectField struct {
+	Name string
+}
+
+func (ss *SqlStorage) getStorageObjectFields(stObjName string) ([]StorageObjectField, *Error) {
 	r, err := ss.conn.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
 	if err != nil {
 		ss.log.Warning(err.Error())
@@ -137,10 +143,14 @@ func (ss *SqlStorage) getStorageObjectFields(stObjName string) ([]string, *Error
 		ss.log.Info("SelectAllColumns returned NIL result")
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
 	}
-	res, colErr := r.Columns()
+	cols, colErr := r.Columns()
 	if colErr != nil {
 		ss.log.Warning(colErr.Error())
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
+	}
+	res := make([]StorageObjectField, len(cols))
+	for i, col := range cols {
+		res[i] = StorageObjectField{Name: col}
 	}
 	return res, nil
 }

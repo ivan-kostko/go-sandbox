@@ -2,101 +2,139 @@
 package SqlStorage
 
 import (
+	. "customErrors"
+	"encoding/json"
 	"reflect"
+	"strings"
 )
 
 const (
-
+	EMPTY_STRING = ""
 )
 
-const(
-    ERR_NONSTRUCTTYPE = 'Wont generate structure mapping for non-struct type'
+const (
+	ERR_NONSTRUCTTYPE    = "Wont generate structure mapping for non-struct type"
+	ERR_FAILEDTOGENMAP   = "Failed to generate mapping"
+	ERR_FAILEDTOPARSETAG = "Failed to parse JSON value at field tag"
 )
 
-// Represents all needed data for mapping between Model(struct) and StorageObject(table/view/collection) field
+// Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) field/column
 type FieldMapping struct {
-	StorageObjectFieldName string     // corresponding storage field
-	StructureFieldName     string     // just for testing, cause access field by name almost 2 times slower than by index
-    StructureFieldId       int        // structure FieldId. Assigned on registration
-	ParticipateInKeys      []string   // the list of real or virtual keys
-    AssignedByDb           bool       // flags whether value is assigned by db. ForEx: sequence, default or calculated value
-    ConvertViaDriver       bool       // flags whether value should be converted via driver(prepared query) or directly by storage query builder
+	StorageObjectFieldName string   // corresponding storage field
+	StructureFieldName     string   // just for testing, cause access field by name almost 2 times slower than by index
+	StructureFieldId       int      // structure FieldId. Assigned on registration
+	ParticipateInKeys      []string // the list of real or virtual keys
+	AssignedByDb           bool     // flags whether value is assigned by db. ForEx: sequence, default or calculated value
+	ConvertViaDriver       bool     // flags whether value should be converted via driver(prepared query) or directly by storage query builder
 }
 
+// Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) subset of fields/columns participating in the KEY
 type KeyMapping struct {
-    FieldsMappings []FieldMapping
+	FieldsMappings []FieldMapping
 }
 
+// Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) all fields/columns
 type StructureMapping struct {
 	StorageObjectName string
 
 	// All fields mapping
 	FieldsMappings []FieldMapping
 
-    // Map of preset key data
-    Keys           map[string]KeyMapping
+	// Map of preset keys data
+	Keys map[string]KeyMapping
 }
 
-// Generates structure mapping.If typ is not a kind of struct - returns nil, ERR_NONSTRUCTTYPE
+// Field tag JSON structure
+// Helper structure to parse mapping tag's JSON
+type TagJsonStruct struct {
+	ColName          string
+	Keys             []string
+	AssignedByDb     bool
+	ConvertViaDriver bool
+}
+
+// Generates structure mapping.
+// If typ is not a kind of struct - returns nil, ERR_NONSTRUCTTYPE
+// if failed to generate mapping  - returns nil, ERR_FAILEDTOGENMAP
 func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ reflect.Type) (*StructureMapping, *Error) {
-    if typ.Kind() != reflect.Struct{
-        return nil, NewError(InvalidArgument, ERR_NONSTRUCTTYPE)
-    }
-
-    // get maximum possible capacity for arrays
-    c := typ.NumField()
-
-    pks := make([]FieldMapping, 0, c)
-    bks := make([]FieldMapping, 0, c)
-    vals := make([]FieldMapping, 0, c)
-
-    // loop over fields generating field mapping for eachone
-    for fi := 0; fi < c; fi++ {
-
-    }
-
-	return &StructureMapping{
-		StructureType:     typ,
-		StorageObjectName: storageObjectName,
-		FieldMappings:     sfm,
-	}, nil
-
-}
-
-func (ss *SqlStorage) generateStructureFieldMappings(storageObjectName string, typ reflect.Type) ([]FieldMapping, error) {
-	// checks first
 	if typ.Kind() != reflect.Struct {
-		return nil, NewError(InvalidArgument, ERR_NONSTUCTTYPE, ERR_DEFAULT_SEVERITY)
+		return nil, NewError(InvalidArgument, ERR_NONSTRUCTTYPE)
 	}
-	var ret = make([]FieldMapping, 0, typ.NumField())
-	var storageObjectFields = s.getStorageObjectFields(storageObjectName)
 
-	for i := 0; i < typ.NumField(); i++ {
-		fieldTagValue := typ.Field(i).Tag.Get(s.config.MappingTag)
-		fieldName := typ.Field(i).Name
-		// If no tag provided, take field name
-		comparisonName := fieldName
-		if fieldTagValue != "" {
-			comparisonName = fieldTagValue
+	// get maximum possible capacity for arrays
+	c := typ.NumField()
+
+	// make slice to hold field mappings
+	fieldMappings := make([]FieldMapping, 0, c)
+
+	// Get storage object fields(columns)
+	storageObjectFields, err := ss.getStorageObjectFields(storageObjectName)
+	if err != nil {
+		// any furthem mapping would be invalid
+		ss.log.Error(ERR_FAILEDTOGENMAP, err)
+		return nil, NewError(InvalidOperation, ERR_FAILEDTOGENMAP)
+	}
+
+	// loop over fields generating field mapping for eachone
+	for fi := 0; fi < c; fi++ {
+		// Get field tag
+		fieldTagString := typ.Field(fi).Tag.Get(ss.conf.MappingTag)
+		var fieldTagValue *TagJsonStruct
+
+		if fieldTagString != EMPTY_STRING {
+			fieldTagValue := new(TagJsonStruct)
+			err := json.Unmarshal([]byte(strings.Replace(fieldTagString, "'", string('"'), -1)), fieldTagValue)
+			if err != nil || fieldTagValue == nil {
+				ss.log.Error(ERR_FAILEDTOPARSETAG, err)
+			}
 		}
+
+		fieldName := typ.Field(fi).Name
+		comparisonFieldName := fieldName
+		if fieldTagValue != nil && fieldTagValue.ColName != EMPTY_STRING {
+			comparisonFieldName = fieldTagValue.ColName
+		}
+
+		var correspondingStorageObjectFieldName string
 		// Now looking for matching field at storageObjectFields
 		for x := 0; x < len(storageObjectFields); x++ {
-			if s.namesMatch(comparisonName, storageObjectFields[x]) {
-				fm := FieldMapping{
-					StorageObjectFieldName: storageObjectFields[x],
-					StructureFieldName:     fieldName,
-					// TODO : implement
-					// StructureFieldTags:
-				}
-				ret = append(ret, fm)
-				// StructureField found, go to next field
+			if ss.namesMatch(comparisonFieldName, storageObjectFields[x].Name) {
+				correspondingStorageObjectFieldName = storageObjectFields[x].Name
 				break
 			}
 		}
 
+		if correspondingStorageObjectFieldName != EMPTY_STRING {
+			fm := FieldMapping{
+				StorageObjectFieldName: correspondingStorageObjectFieldName,
+				StructureFieldName:     fieldName,
+				StructureFieldId:       fi,
+				// Defaults
+				ParticipateInKeys: {EMPTY_STRING},
+				AssignedByDb:      false,
+				ConvertViaDriver:  false,
+			}
+
+			if fieldTagValue != nil {
+				append(fm.ParticipateInKeys, fieldTagValue.Keys)
+				fm.AssignedByDb = fieldTagValue.AssignedByDb
+				fm.ConvertViaDriver = fieldTagValue.ConvertViaDriver
+			}
+
+			append(fieldMappings, fm)
+		}
 	}
-	if len(ret) == 0 {
-		return nil, nil
+
+	if len(fieldMappings) == 0 {
+		ss.log.Error(ERR_FAILEDTOGENMAP, "Generated mapping is empty")
+		return nil, NewError(InvalidOperation, ERR_FAILEDTOGENMAP)
 	}
-	return ret, nil
+
+	//TODO : implement fillup of  Keys  map[string]KeyMapping
+
+	return &StructureMapping{
+		StorageObjectName: storageObjectName,
+		FieldsMappings:    fieldMappings,
+	}, nil
+
 }
