@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unsafe"
 )
 
 func TestConvertBySwitch(t *testing.T) {
@@ -98,6 +99,75 @@ func TestReflectFieldTags(t *testing.T) {
 		}
 		t.Log(*tgs)
 	}
+}
+
+func TestReflectFields(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	type TagJsonStruct struct {
+		ColName         string
+		Keys            []string
+		ResolvedByDb    bool
+		ConvertByDriver bool
+	}
+	mtt := MyTestType{}
+	c := reflect.TypeOf(mtt).NumField()
+	//val := reflect.ValueOf(mtt)
+	for fi := 0; fi < c; fi++ {
+		t.Logf("The field pointer is %v and calculated is %v", reflect.ValueOf(&mtt.Field3).Pointer(), reflect.TypeOf(mtt).Field(fi).Offset+reflect.ValueOf(&mtt).Pointer())
+	}
+}
+
+func TestNewFieldsSubsetByReflection(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	mtt := MyTestType{}
+	expected := FieldSubset{Name: "TestSubSet", Type: reflect.TypeOf(mtt), fieldsIds: []int{1, 3}}
+	actual, err := NewFieldsSubset("TestSubSet", &mtt, &mtt.Field2, &mtt.Field4)
+	if err != nil {
+		t.Log(err)
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("NewFieldsSubset returned %v \r\n while expected %v", actual, expected)
+	}
+}
+
+func TestNewFieldsSubsetByUnsafe(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	mtt := MyTestType{}
+	expected := FieldSubset{Name: "TestSubSet", Type: reflect.TypeOf(mtt), fieldsIds: []int{1, 3}}
+	t.Logf("&mtt = %p", &mtt)
+	actual, err := NewFieldsSubsetByUnsafe("TestSubSet", mtt, mtt.Field2, mtt.Field4)
+	if err != nil {
+		t.Log(err)
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Errorf("NewFieldsSubset returned %v \r\n while expected %v", actual, expected)
+	}
+}
+
+func TestPlayWithUnsafe(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	mtt := MyTestType{}
+	t.Logf("Pointer = %v", unsafe.Pointer(&mtt))
 }
 
 func BenchmarkMap(b *testing.B) {

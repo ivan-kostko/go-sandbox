@@ -8,6 +8,7 @@ import (
 	"strings"
 	//"text/template"
 	"time"
+	"unsafe"
 )
 
 var FuncMap map[reflect.Type]func(interface{}) string
@@ -139,4 +140,76 @@ func CustomJoinStrings(ss ...string) (r string) {
 		r += s
 	}
 	return r
+}
+
+// Represents subset of structure fields
+type FieldSubset struct {
+	Name        string
+	Type        reflect.Type
+	fieldsIds   []int
+	fieldsNames []string
+}
+
+// Creates new FieldsSubset based on the sample pointer and the samples fields pointers
+// It returns InvalidOperation Error if any of fields does not belong to the sample
+func NewFieldsSubsetByReflection(name string, sample interface{}, sampleFields ...interface{}) (FieldSubset, error) {
+	typ := reflect.TypeOf(sample).Elem()
+	ret := FieldSubset{Name: name, Type: typ}
+	c := len(sampleFields)
+	// if no fields provided return empty FieldSubset
+	if c == 0 {
+		return ret, nil
+	}
+	fids := make([]int, c, c)
+	sampleFirstPtr := reflect.ValueOf(sample).Pointer()
+	sampleLeastPtr := sampleFirstPtr + typ.Size()
+
+	for i := 0; i < c; i++ {
+		sfPtr := reflect.ValueOf(sampleFields[i]).Pointer()
+		if sfPtr < sampleFirstPtr || sampleLeastPtr <= sfPtr {
+			return ret, fmt.Errorf("InvalidOperation")
+		}
+		for fi := 0; fi < typ.NumField(); fi++ {
+			if sfPtr == sampleFirstPtr+typ.Field(fi).Offset {
+				fids[i] = fi
+				break
+			}
+		}
+	}
+	ret.fieldsIds = fids
+	return ret, nil
+}
+
+func NewFieldsSubsetByUnsafe(name string, sample interface{}, sampleFields ...interface{}) (FieldSubset, error) {
+	typ := reflect.TypeOf(sample)
+	ret := FieldSubset{Name: name, Type: typ}
+	c := len(sampleFields)
+	// if no fields provided return empty FieldSubset
+	if c == 0 {
+		return ret, nil
+	}
+	fids := make([]int, c, c)
+	sampleFirstPtr := unsafe.Pointer(&sample)
+	sampleLeastPtr := uintptr(sampleFirstPtr) + unsafe.Sizeof(sample)
+
+	for i := 0; i < c; i++ {
+		sfPtr := uintptr(unsafe.Pointer(&(sampleFields[i]))) // reflect.ValueOf(sampleFields[i]).Pointer()
+		if sfPtr < uintptr(sampleFirstPtr) || sampleLeastPtr <= sfPtr {
+			return ret, fmt.Errorf("InvalidOperation %v %v %v | &sample = %v", uintptr(sampleFirstPtr), sfPtr, sampleLeastPtr, &sample)
+		}
+		for fi := 0; fi < typ.NumField(); fi++ {
+			if sfPtr == uintptr(sampleFirstPtr)+typ.Field(fi).Offset {
+				fids[i] = fi
+				break
+			}
+		}
+	}
+	ret.fieldsIds = fids
+	return ret, nil
+}
+
+func NewFieldsSubset(name string, sample interface{}, sampleFields ...interface{}) (FieldSubset, error) {
+
+	return NewFieldsSubsetByReflection(name, sample, sampleFields...)
+	//return NewFieldsSubsetByUnsafe(name, sample, sampleFields...)
 }
