@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"unsafe"
 )
 
 func TestConvertBySwitch(t *testing.T) {
@@ -122,7 +121,7 @@ func TestReflectFields(t *testing.T) {
 	}
 }
 
-func TestNewFieldsSubsetByReflection(t *testing.T) {
+func TestNewFieldsSubset(t *testing.T) {
 	type MyTestType struct {
 		Field1 string
 		Field2 []byte
@@ -138,36 +137,6 @@ func TestNewFieldsSubsetByReflection(t *testing.T) {
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("NewFieldsSubset returned %v \r\n while expected %v", actual, expected)
 	}
-}
-
-func TestNewFieldsSubsetByUnsafe(t *testing.T) {
-	type MyTestType struct {
-		Field1 string
-		Field2 []byte
-		Field3 *int
-		Field4 float64
-	}
-	mtt := MyTestType{}
-	expected := FieldSubset{Name: "TestSubSet", Type: reflect.TypeOf(mtt), fieldsIds: []int{1, 3}}
-	t.Logf("&mtt = %p", &mtt)
-	actual, err := NewFieldsSubsetByUnsafe("TestSubSet", mtt, mtt.Field2, mtt.Field4)
-	if err != nil {
-		t.Log(err)
-	}
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("NewFieldsSubset returned %v \r\n while expected %v", actual, expected)
-	}
-}
-
-func TestPlayWithUnsafe(t *testing.T) {
-	type MyTestType struct {
-		Field1 string
-		Field2 []byte
-		Field3 *int
-		Field4 float64
-	}
-	mtt := MyTestType{}
-	t.Logf("Pointer = %v", unsafe.Pointer(&mtt))
 }
 
 func BenchmarkMap(b *testing.B) {
