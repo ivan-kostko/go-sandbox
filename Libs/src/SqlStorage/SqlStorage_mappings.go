@@ -148,6 +148,7 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 		fieldTagString := typ.Field(fi).Tag.Get(ss.conf.MappingTag)
 		var fieldTagValue *TagJsonStruct
 
+		// if Tag is not empty - parse as Json
 		if fieldTagString != EMPTY_STRING {
 			fieldTagValue := new(TagJsonStruct)
 			err := json.Unmarshal([]byte(strings.Replace(fieldTagString, "'", string('"'), -1)), fieldTagValue)
