@@ -68,7 +68,7 @@ func TestNewKeyWoFields(t *testing.T) {
 	}
 }
 
-func TestKeyExtractFields(t *testing.T) {
+func TestKeyExtractFieldsByPtr(t *testing.T) {
 	type MyTestType struct {
 		Field1 string
 		Field2 []byte
@@ -88,6 +88,30 @@ func TestKeyExtractFields(t *testing.T) {
 		reflect.DeepEqual(actualVal, expectedVal) &&
 		err == nil) {
 		t.Errorf("NewKey returned Names: %v Vals: %v Error %v while expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
+	}
+
+}
+
+func TestKeyExtractFieldsByVal(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	sample := MyTestType{}
+	mtt := MyTestType{Field1: "Field1", Field2: []byte("Field2"), Field3: nil, Field4: float64(2345.98765)}
+	expectedStr := []string{"Field3", "Field2", "Field4"}
+	expectedVal := []interface{}{((*int)(nil)), []byte("Field2"), float64(2345.98765)}
+	k, err := NewKey("TestKeyExtractFields", &sample, &sample.Field3, &sample.Field2, &sample.Field4)
+	if err != nil {
+		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
+	}
+	actualStr, actualVal, err := k.Extract(mtt)
+	if !(reflect.DeepEqual(actualStr, expectedStr) &&
+		reflect.DeepEqual(actualVal, expectedVal) &&
+		err == nil) {
+		t.Errorf("NewKey returned Names: %v Vals: %v Error %v \r\n\t\t\twhile expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
 	}
 
 }
