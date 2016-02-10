@@ -116,6 +116,10 @@ func TestKeyExtractFieldsByVal(t *testing.T) {
 
 }
 
+//-------------//
+// Benchmarks  //
+//-------------//
+
 func BenchmarkKeyExtractCustom6fields(b *testing.B) {
 	type MyTestType struct {
 		Field1  string

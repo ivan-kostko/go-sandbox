@@ -97,7 +97,8 @@ type FieldMapping struct {
 
 // Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) subset of fields/columns participating in the KEY
 type KeyMapping struct {
-	FieldsMappings []FieldMapping
+	Key
+	SOFieldsNames []string
 }
 
 // Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) all fields/columns
@@ -198,11 +199,35 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGENMAP)
 	}
 
+	keys := make(map[string]KeyMapping)
 	//TODO : implement fillup of  Keys  map[string]KeyMapping
+	for _, fm := range fieldMappings {
+		/*
+			        type Key struct {
+						Name        string
+						Type        reflect.Type
+						fieldsIds   []int
+						fieldsNames []string
+					}
+		*/
+		if len(fm.ParticipateInKeys) > 0 {
+			for _, kn := range fm.ParticipateInKeys {
+				if km, ok := keys[kn]; ok {
+					km.fieldsIds = append(km.fieldsIds, fm.StructureFieldId)
+					km.fieldsNames = append(km.fieldsNames, fm.StructureFieldName)
+					km.SOFieldsNames = append(km.SOFieldsNames, fm.StorageObjectFieldName)
+				} else {
+					km = KeyMapping{Key: Key{Name: kn, Type: typ, fieldsIds: []int{fm.StructureFieldId}, fieldsNames: []string{fm.StructureFieldName}}, SOFieldsNames: []string{fm.StorageObjectFieldName}}
+					keys[kn] = km
+				}
+			}
+		}
+	}
 
 	return &StructureMapping{
 		StorageObjectName: storageObjectName,
 		FieldsMappings:    fieldMappings,
+		Keys:              keys,
 	}, nil
 
 }
