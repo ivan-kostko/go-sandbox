@@ -44,6 +44,7 @@ func TestSqlStorageInitializeWithEmptyConnection(t *testing.T) {
 
 // NB: Does integration - tries to connect to TEST_CONN_STR via odbc driver
 func TestSqlStorageInitializeForSuccess(t *testing.T) {
+	t.Skip()
 	ssc := SqlStorageConfiguration{
 		DriverName: "odbc",
 		ConnString: TEST_CONN_STR,
