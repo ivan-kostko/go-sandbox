@@ -200,16 +200,8 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 	}
 
 	keys := make(map[string]KeyMapping)
-	//TODO : implement fillup of  Keys  map[string]KeyMapping
+	// fillup of  Keys  map[string]KeyMapping
 	for _, fm := range fieldMappings {
-		/*
-			        type Key struct {
-						Name        string
-						Type        reflect.Type
-						fieldsIds   []int
-						fieldsNames []string
-					}
-		*/
 		if len(fm.ParticipateInKeys) > 0 {
 			for _, kn := range fm.ParticipateInKeys {
 				if km, ok := keys[kn]; ok {
