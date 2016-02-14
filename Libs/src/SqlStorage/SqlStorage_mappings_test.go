@@ -87,7 +87,7 @@ func TestKeyExtractFieldsByPtr(t *testing.T) {
 	if !(reflect.DeepEqual(actualStr, expectedStr) &&
 		reflect.DeepEqual(actualVal, expectedVal) &&
 		err == nil) {
-		t.Errorf("NewKey returned Names: %v Vals: %v Error %v while expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
+		t.Errorf("k.Extract(&mtt) returned Names: %v Vals: %v Error %v while expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
 	}
 
 }
@@ -111,7 +111,28 @@ func TestKeyExtractFieldsByVal(t *testing.T) {
 	if !(reflect.DeepEqual(actualStr, expectedStr) &&
 		reflect.DeepEqual(actualVal, expectedVal) &&
 		err == nil) {
-		t.Errorf("NewKey returned Names: %v Vals: %v Error %v \r\n\t\t\twhile expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
+		t.Errorf("k.Extract(mtt) returned Names: %v Vals: %v Error %v \r\n\t\t\twhile expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
+	}
+
+}
+
+func TestKeyAssignFieldsByVals(t *testing.T) {
+	type MyTestType struct {
+		Field1 string
+		Field2 []byte
+		Field3 *int
+		Field4 float64
+	}
+	sample := MyTestType{}
+	actualStruct := MyTestType{Field1: "Field1", Field2: []byte("Field2"), Field3: nil, Field4: float64(2345.98765)}
+	expectedStruct := MyTestType{Field1: "NewField1Value", Field2: []byte("AKind Of New Field2"), Field3: nil, Field4: float64(54321.56789)}
+	k, err := NewKey("TestKeyExtractFields", &sample, &sample.Field1, &sample.Field2, &sample.Field4)
+	if err != nil {
+		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
+	}
+	err = k.Assign(&actualStruct, []interface{}{"NewField1Value", []byte("AKind Of New Field2"), float64(54321.56789)})
+	if !(reflect.DeepEqual(actualStruct, expectedStruct) && err == nil) {
+		t.Errorf("k.Assign(&mtt,...) assigned : %v with Error %v \r\n\t\t\t while expected %v with Error %v", actualStruct, err, expectedStruct, nil)
 	}
 
 }

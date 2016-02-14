@@ -18,6 +18,7 @@ const (
 	ERR_FAILEDTOPARSETAG = "Failed to parse JSON value at field tag"
 	ERR_FIELDPTROUTOFRNG = "sampleFields pointer is out of sample range"
 	ERR_KEYTYPENOTMATCH  = "Key type is differ from provided"
+	ERR_NONPTRARGUMENT   = "The acceptor is not a pointer"
 )
 
 // Represents subset of structure fields
@@ -83,6 +84,30 @@ func (k *Key) Extract(i interface{}) ([]string, []interface{}, *Error) {
 		vals[fi] = (val.Field(k.fieldsIds[fi])).Interface()
 	}
 	return k.fieldsNames, vals, nil
+}
+
+// Assigns values from array into given instance fields
+// NB: returns Error InvalidArgument if type registered for key is not the same as for given instance
+//     returns Error InvalidArgument if i is not a kind of pointer
+func (k *Key) Assign(i interface{}, vals []interface{}) *Error {
+	var typ reflect.Type
+	var val reflect.Value
+	if reflect.TypeOf(i).Kind() == reflect.Ptr {
+		typ = reflect.TypeOf(i).Elem()
+		val = reflect.ValueOf(i).Elem()
+	} else {
+		return NewError(InvalidArgument, ERR_NONPTRARGUMENT)
+	}
+
+	if k.Type != typ {
+		return NewError(InvalidArgument, ERR_KEYTYPENOTMATCH)
+	}
+
+	//vals := make([]interface{}, len(k.fieldsIds))
+	for fi := 0; fi < len(k.fieldsIds); fi++ {
+		val.Field(k.fieldsIds[fi]).Set(reflect.ValueOf(vals[fi]))
+	}
+	return nil
 }
 
 // Contains all needed data for mapping between Model(struct) and StorageObject(table/view/collection) field/column
