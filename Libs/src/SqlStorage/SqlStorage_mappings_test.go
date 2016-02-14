@@ -3,8 +3,10 @@ package SqlStorage
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
+	"Logger"
 	. "customErrors"
 )
 
@@ -135,6 +137,130 @@ func TestKeyAssignFieldsByVals(t *testing.T) {
 		t.Errorf("k.Assign(&mtt,...) assigned : %v with Error %v \r\n\t\t\t while expected %v with Error %v", actualStruct, err, expectedStruct, nil)
 	}
 
+}
+
+func TestSqlStorageGenerateStructureMapping(t *testing.T) {
+	type MyTestType struct {
+		Id     *int    `db:"{'ColName':'Id', 'Keys':['PK'], 'ResolvedByDb':true}"`
+		Field1 *string `db:"{'ColName':'field_1', 'Keys':['BK'], 'ResolvedByDb':false}"`
+		Field2 *int    `db:"{'ColName':'field_2', 'Keys':['BK'], 'ResolvedByDb':false}"`
+		Field3 *int    `db:"{'ColName':'field_3', 'Keys':['BK', 'Val'], 'ResolvedByDb':false}"`
+		Field4 float64 `db:"{'ColName':'field_4', 'Keys':['Val'], 'ResolvedByDb':false}"`
+		Field5 float64 `db:"{'ColName':'field_5', 'Keys':['Val'], 'ResolvedByDb':false}"`
+		Field6 float64 `db:"{'ColName':'field_6', 'Keys':['Val'], 'ResolvedByDb':false}"`
+	}
+	typ := reflect.TypeOf(MyTestType{})
+	ssc := SqlStorageConfiguration{
+		MappingTag: "db",
+	}
+	ss := SqlStorage{
+		conf: &ssc,
+		log:  Logger.GetStdTerminalLogger(),
+		namesMatch: func(a, b string) bool {
+			return strings.ToLower(a) == strings.ToLower(b)
+		},
+		getStorageObjectFields: func(ss *SqlStorage, name string) ([]StorageObjectField, *Error) {
+			return []StorageObjectField{{Name: "Id"}, {Name: "field_1"}, {Name: "field_2"}, {Name: "field_3"}, {Name: "field_4"}, {Name: "field_5"}, {Name: "field_6"}}, nil
+		},
+	}
+	initStorObjName := "TestStorageObject"
+	expectedStructMap := StructureMapping{
+		StorageObjectName: initStorObjName,
+		FieldsMappings: []FieldMapping{
+			{
+				StorageObjectFieldName: "Id",
+				StructureFieldName:     "Id",
+				StructureFieldId:       0,
+				ParticipateInKeys:      []string{EMPTY_STRING, "PK"},
+			},
+			{
+				StorageObjectFieldName: "field_1",
+				StructureFieldName:     "Field1",
+				StructureFieldId:       1,
+				ParticipateInKeys:      []string{EMPTY_STRING, "BK"},
+			},
+			{
+				StorageObjectFieldName: "field_2",
+				StructureFieldName:     "Field2",
+				StructureFieldId:       2,
+				ParticipateInKeys:      []string{EMPTY_STRING, "BK"},
+			},
+
+			{
+				StorageObjectFieldName: "field_3",
+				StructureFieldName:     "Field3",
+				StructureFieldId:       3,
+				ParticipateInKeys:      []string{EMPTY_STRING, "BK", "Val"},
+			},
+
+			{
+				StorageObjectFieldName: "field_4",
+				StructureFieldName:     "Field4",
+				StructureFieldId:       4,
+				ParticipateInKeys:      []string{EMPTY_STRING, "Val"},
+			},
+
+			{
+				StorageObjectFieldName: "field_5",
+				StructureFieldName:     "Field5",
+				StructureFieldId:       5,
+				ParticipateInKeys:      []string{EMPTY_STRING, "Val"},
+			},
+
+			{
+				StorageObjectFieldName: "field_6",
+				StructureFieldName:     "Field6",
+				StructureFieldId:       6,
+				ParticipateInKeys:      []string{EMPTY_STRING, "Val"},
+			},
+		},
+		KeyMappings: map[string]KeyMapping{
+			"PK": KeyMapping{
+				Key: Key{
+					Name:        "PK",
+					Type:        typ,
+					fieldsIds:   []int{0},
+					fieldsNames: []string{"Id"},
+				},
+				SOFieldsNames: []string{"Id"},
+			},
+			"BK": KeyMapping{
+				Key: Key{
+					Name:        "BK",
+					Type:        typ,
+					fieldsIds:   []int{1, 2, 3},
+					fieldsNames: []string{"Field1", "Field2", "Field3"},
+				},
+				SOFieldsNames: []string{"field_1", "field_2", "field_3"},
+			},
+			"Val": KeyMapping{
+				Key: Key{
+					Name:        "Val",
+					Type:        typ,
+					fieldsIds:   []int{3, 4, 5, 6},
+					fieldsNames: []string{"Field3", "Field4", "Field5", "Field6"},
+				},
+				SOFieldsNames: []string{"field_3", "field_4", "field_5", "field_6"},
+			},
+			"": KeyMapping{
+				Key: Key{
+					Name:        "",
+					Type:        typ,
+					fieldsIds:   []int{0, 1, 2, 3, 4, 5, 6},
+					fieldsNames: []string{"Id", "Field1", "Field2", "Field3", "Field4", "Field5", "Field6"},
+				},
+				SOFieldsNames: []string{"Id", "field_1", "field_2", "field_3", "field_4", "field_5", "field_6"},
+			},
+		},
+	}
+	actualStructMap, actualErr := ss.generateStructureMapping(initStorObjName, typ)
+	if actualErr != nil {
+		t.Fatalf("ss.generateStructureMapping(initStorObjName, typ) returned unexpected error %v", actualErr)
+	}
+	if !(reflect.DeepEqual(*actualStructMap, expectedStructMap)) {
+		t.Errorf("ss.generateStructureMapping(initStorObjName, typ) returned mapping: \r\n%v \r\n while expected \r\n%v", *actualStructMap, expectedStructMap)
+
+	}
 }
 
 //-------------//

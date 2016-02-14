@@ -134,7 +134,7 @@ type StructureMapping struct {
 	FieldsMappings []FieldMapping
 
 	// Map of preset keys data
-	Keys map[string]KeyMapping
+	KeyMappings map[string]KeyMapping
 }
 
 // Field tag JSON structure
@@ -161,7 +161,7 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 	fieldMappings := make([]FieldMapping, 0, c)
 
 	// Get storage object fields(columns)
-	storageObjectFields, err := ss.getStorageObjectFields(storageObjectName)
+	storageObjectFields, err := ss.GetStorageObjectFields(storageObjectName)
 	if err != nil {
 		// any furthem mapping would be invalid
 		ss.log.Error(ERR_FAILEDTOGENMAP, err)
@@ -172,11 +172,10 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 	for fi := 0; fi < c; fi++ {
 		// Get field tag
 		fieldTagString := typ.Field(fi).Tag.Get(ss.conf.MappingTag)
-		var fieldTagValue *TagJsonStruct
+		fieldTagValue := new(TagJsonStruct)
 
 		// if Tag is not empty - parse as Json
 		if fieldTagString != EMPTY_STRING {
-			fieldTagValue := new(TagJsonStruct)
 			err := json.Unmarshal([]byte(strings.Replace(fieldTagString, "'", string('"'), -1)), fieldTagValue)
 			if err != nil || fieldTagValue == nil {
 				ss.log.Error(ERR_FAILEDTOPARSETAG, err)
@@ -214,7 +213,6 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 				fm.AssignedByDb = fieldTagValue.AssignedByDb
 				fm.ConvertViaDriver = fieldTagValue.ConvertViaDriver
 			}
-
 			fieldMappings = append(fieldMappings, fm)
 		}
 	}
@@ -224,19 +222,21 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGENMAP)
 	}
 
-	keys := make(map[string]KeyMapping)
+	keyMappings := make(map[string]KeyMapping)
 	// fillup of  Keys  map[string]KeyMapping
-	for _, fm := range fieldMappings {
-		if len(fm.ParticipateInKeys) > 0 {
-			for _, kn := range fm.ParticipateInKeys {
-				if km, ok := keys[kn]; ok {
-					km.fieldsIds = append(km.fieldsIds, fm.StructureFieldId)
-					km.fieldsNames = append(km.fieldsNames, fm.StructureFieldName)
-					km.SOFieldsNames = append(km.SOFieldsNames, fm.StorageObjectFieldName)
+	for _, fieldMapping := range fieldMappings {
+		if len(fieldMapping.ParticipateInKeys) > 0 {
+			for _, keyName := range fieldMapping.ParticipateInKeys {
+				keyMapping, ok := keyMappings[keyName]
+				if ok {
+					keyMapping.Key.fieldsIds = append(keyMapping.fieldsIds, fieldMapping.StructureFieldId)
+					keyMapping.Key.fieldsNames = append(keyMapping.fieldsNames, fieldMapping.StructureFieldName)
+					keyMapping.SOFieldsNames = append(keyMapping.SOFieldsNames, fieldMapping.StorageObjectFieldName)
 				} else {
-					km = KeyMapping{Key: Key{Name: kn, Type: typ, fieldsIds: []int{fm.StructureFieldId}, fieldsNames: []string{fm.StructureFieldName}}, SOFieldsNames: []string{fm.StorageObjectFieldName}}
-					keys[kn] = km
+					keyMapping = KeyMapping{Key: Key{Name: keyName, Type: typ, fieldsIds: []int{fieldMapping.StructureFieldId}, fieldsNames: []string{fieldMapping.StructureFieldName}}, SOFieldsNames: []string{fieldMapping.StorageObjectFieldName}}
 				}
+				keyMappings[keyName] = keyMapping
+
 			}
 		}
 	}
@@ -244,7 +244,7 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 	return &StructureMapping{
 		StorageObjectName: storageObjectName,
 		FieldsMappings:    fieldMappings,
-		Keys:              keys,
+		KeyMappings:       keyMappings,
 	}, nil
 
 }
