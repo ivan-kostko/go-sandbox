@@ -38,8 +38,9 @@ type SqlStorage struct {
 	dialect SqlDialects.ISqlDialect
 	conn    *sqlx.DB // keeps connection pool active
 
-	structureMappings map[reflect.Type]StructureMapping
-	namesMatch        func(string, string) bool
+	structureMappings      map[reflect.Type]StructureMapping
+	namesMatch             func(string, string) bool
+	getStorageObjectFields func(*SqlStorage, string) ([]StorageObjectField, *Error)
 }
 
 // The interface represents embeded composition of implemented interfaces by SqlStorage struct
@@ -61,7 +62,7 @@ func GetNewISqlStorage(conf SqlStorageConfiguration, log Logger.ILogger) (ISqlSt
 		// try to get default logger by providing empty LoggerConfig
 		log = Logger.GetILogger(Logger.LoggerConfig{})
 	}
-	iss := &SqlStorage{log: log, conf: &conf}
+	iss := &SqlStorage{log: log, conf: &conf, getStorageObjectFields: getStorageObjectFields}
 	err := iss.Initialize()
 	if err != nil {
 		log.Critical(ERR_FAILEDTOINITIALIZE_SQLSTORAGE, err)
@@ -133,7 +134,12 @@ type StorageObjectField struct {
 	Name string
 }
 
-func (ss *SqlStorage) getStorageObjectFields(stObjName string) ([]StorageObjectField, *Error) {
+// Gets the storage object fields
+func (ss *SqlStorage) GetStorageObjectFields(stObjName string) ([]StorageObjectField, *Error) {
+	return ss.getStorageObjectFields(ss, stObjName)
+}
+
+func getStorageObjectFields(ss *SqlStorage, stObjName string) ([]StorageObjectField, *Error) {
 	r, err := ss.conn.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
 	if err != nil {
 		ss.log.Warning(err.Error())
