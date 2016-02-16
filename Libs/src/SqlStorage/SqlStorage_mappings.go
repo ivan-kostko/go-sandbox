@@ -15,6 +15,7 @@ const (
 const (
 	ERR_NONSTRUCTTYPE    = "Wont generate structure mapping for non-struct type"
 	ERR_FAILEDTOGENMAP   = "Failed to generate mapping"
+	ERR_GNRATEDNILMAPING = "Generated mapping is <nil>"
 	ERR_FAILEDTOPARSETAG = "Failed to parse JSON value at field tag"
 	ERR_FIELDPTROUTOFRNG = "sampleFields pointer is out of sample range"
 	ERR_KEYTYPENOTMATCH  = "Key type is differ from provided"
@@ -146,10 +147,28 @@ type TagJsonStruct struct {
 	ConvertViaDriver bool
 }
 
+// Registers the structure mapping in the storage
+// TODO : keys registration
+func (ss *SqlStorage) RegisterType(storageObjectName string, st interface{}, keys ...Key) *Error {
+	typ := reflect.TypeOf(st)
+	sm, err := ss.generateStructureMapping(storageObjectName, typ)
+	if err != nil {
+		ss.log.Critical(err)
+		return err
+	}
+	if sm == nil {
+		ss.log.Alert(ERR_GNRATEDNILMAPING)
+		return NewError(BasicError, ERR_GNRATEDNILMAPING)
+	}
+	ss.structureMappings[typ] = *sm
+	return nil
+}
+
 // Generates structure mapping.
 // If typ is not a kind of struct - returns nil, ERR_NONSTRUCTTYPE
 // if failed to generate mapping  - returns nil, ERR_FAILEDTOGENMAP
 func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ reflect.Type) (*StructureMapping, *Error) {
+	// TODO : Register input keys
 	if typ.Kind() != reflect.Struct {
 		return nil, NewError(InvalidArgument, ERR_NONSTRUCTTYPE)
 	}
