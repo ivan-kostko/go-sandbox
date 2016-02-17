@@ -193,3 +193,13 @@ func TestBuildMSSQL2014SelectSqlScriptString(t *testing.T) {
 		t.Errorf("buildMSSQL2014InsertSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
 	}
 }
+
+func TestBuildMSSQL2014WhereSqlScriptString(t *testing.T) {
+	columnList := []SqlScriptString{"Col1", "Col2", "Col3"}
+	valueList := []SqlScriptString{"N'Value''1'", "2234.1235", "NULL"}
+	expected := SqlScriptString("Col1 = N'Value''1' AND Col2 = 2234.1235 AND Col3 IS NULL")
+	actual := buildMSSQL2014WhereSqlScriptString(columnList, valueList)
+	if actual != expected {
+		t.Errorf("buildMSSQL2014WhereSqlScriptString returned `%#v` while expected `%#v`", actual, expected)
+	}
+}

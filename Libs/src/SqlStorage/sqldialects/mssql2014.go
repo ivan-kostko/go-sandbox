@@ -30,6 +30,7 @@ func GetMsSql2014Dialect() ISqlDialect {
 		convertIntoSqlScriptString:           convertSomethingIntoMssql2014SqlScriptString,
 		buildInsertSqlScriptString:           buildMSSQL2014InsertSqlScriptString,
 		buildSelectSqlScriptString:           buildMSSQL2014SelectSqlScriptString,
+		buildWhereSqlScriptString:            buildMSSQL2014WhereSqlScriptString,
 		buildSelectAllColumnsSqlScriptString: buildMSSQL2014SelectAllColumnsSqlScriptString,
 	}
 
@@ -128,6 +129,24 @@ func buildMSSQL2014SelectSqlScriptString(tableName, columnList, whereStmt SqlScr
 		query += " WHERE " + whereStmt
 	}
 	return query
+}
+
+func buildMSSQL2014WhereSqlScriptString(columnList, valuesList []SqlScriptString) SqlScriptString {
+	var where SqlScriptString
+	if len(columnList) != len(valuesList) {
+		return where
+	}
+	for i, c := range columnList {
+		if i != 0 {
+			where += " AND "
+		}
+		if valuesList[i] == SqlScriptString(MSSQL2014_DBNULL_SCRPT_STRING) {
+			where += c + " IS " + SqlScriptString(MSSQL2014_DBNULL_SCRPT_STRING)
+		} else {
+			where += c + " = " + valuesList[i]
+		}
+	}
+	return where
 }
 
 func buildMSSQL2014SelectAllColumnsSqlScriptString(tablename string) SqlScriptString {

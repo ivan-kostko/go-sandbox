@@ -28,6 +28,7 @@ type SqlDialect struct {
 	convertIntoSqlScriptString           func(interface{}) (SqlScriptString, *Error)
 	buildInsertSqlScriptString           func(tableName, columnList, valuesList SqlScriptString) SqlScriptString
 	buildSelectSqlScriptString           func(tableName, columnList, whereStmt SqlScriptString, limit int) SqlScriptString
+	buildWhereSqlScriptString            func(columnList, valuesList []SqlScriptString) SqlScriptString
 	buildSelectAllColumnsSqlScriptString func(tableName string) SqlScriptString
 }
 
