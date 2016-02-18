@@ -115,6 +115,36 @@ func (ss *SqlStorage) Get(m interface{}) *Error {
 	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)
 }
 
+func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *Error {
+	typ := reflect.TypeOf(m)
+	sm := ss.structureMappings[typ]
+	getKeyMapping := sm.KeyMappings[getKeyName]
+	byKeyMapping := sm.KeyMappings[byKeyName]
+	whereCols := byKeyMapping.SOFieldsNames
+	whereColumnList := make([]SqlDialects.SqlScriptString, len(whereCols))
+	for i, c := range whereCols {
+		whereColumnList[i] = SqlDialects.SqlScriptString(c)
+	}
+	_, whereVals, err := byKeyMapping.Extract(m)
+	if err != nil {
+		return err
+	}
+	whereValueList := make([]SqlDialects.SqlScriptString, len(whereVals))
+	for i, v := range whereVals {
+		ss.log.Debugf("v:= %#v", v)
+		whereValueList[i], err = ss.dialect.ConvertIntoSqlScriptString(v)
+		if err != nil {
+			return err
+		}
+	}
+	whereCondition := ss.dialect.BuildWhereSqlScriptString(whereColumnList, whereValueList)
+	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName),
+		ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames),
+		whereCondition, 1)
+	ss.log.Debug(selectQuery)
+	return nil
+}
+
 func (ss *SqlStorage) Put(m interface{}) *Error {
 	// TODO : Implement
 	return NewError(Nonsupported, ERR_FUNCNOTYETIMPLEMENTED)

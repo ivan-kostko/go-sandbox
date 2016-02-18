@@ -21,6 +21,10 @@ type SqlScriptString string
 // Sql Dialect shared interface
 type ISqlDialect interface {
 	BuildSelectAllColumnsSqlScriptString(tableName string) SqlScriptString
+	BuildColumnsListSqlScriptString(cols []string) SqlScriptString
+	ConvertIntoSqlScriptString(i interface{}) (SqlScriptString, *Error)
+	BuildSelectSqlScriptString(tableName, columnList, whereStmt SqlScriptString, limit int) SqlScriptString
+	BuildWhereSqlScriptString(columnList, valuesList []SqlScriptString) SqlScriptString
 }
 
 // Implements ISqlDialect query generation functionality
@@ -30,6 +34,7 @@ type SqlDialect struct {
 	buildSelectSqlScriptString           func(tableName, columnList, whereStmt SqlScriptString, limit int) SqlScriptString
 	buildWhereSqlScriptString            func(columnList, valuesList []SqlScriptString) SqlScriptString
 	buildSelectAllColumnsSqlScriptString func(tableName string) SqlScriptString
+	buildColumnsListSqlScriptString      func(cols []string) SqlScriptString
 }
 
 // Builds query to get empty resultset but with all columns
@@ -63,4 +68,23 @@ func GetDialectByAlias(alias string) (ISqlDialect, *Error) {
 		return nil, NewError(Nonsupported, ERR_DIALECTNOTFOUND)
 	}
 	return d, nil
+}
+
+// Converts i into SqlScriptString via dialect converter
+func (ss *SqlDialect) ConvertIntoSqlScriptString(i interface{}) (SqlScriptString, *Error) {
+	return ss.convertIntoSqlScriptString(i)
+}
+
+//
+func (ss *SqlDialect) BuildSelectSqlScriptString(tableName, columnList, whereStmt SqlScriptString, limit int) SqlScriptString {
+	return ss.buildSelectSqlScriptString(tableName, columnList, whereStmt, limit)
+}
+
+//
+func (ss *SqlDialect) BuildWhereSqlScriptString(columnList, valuesList []SqlScriptString) SqlScriptString {
+	return ss.buildWhereSqlScriptString(columnList, valuesList)
+}
+
+func (ss *SqlDialect) BuildColumnsListSqlScriptString(cols []string) SqlScriptString {
+	return ss.buildColumnsListSqlScriptString(cols)
 }

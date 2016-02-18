@@ -32,6 +32,7 @@ func GetMsSql2014Dialect() ISqlDialect {
 		buildSelectSqlScriptString:           buildMSSQL2014SelectSqlScriptString,
 		buildWhereSqlScriptString:            buildMSSQL2014WhereSqlScriptString,
 		buildSelectAllColumnsSqlScriptString: buildMSSQL2014SelectAllColumnsSqlScriptString,
+		buildColumnsListSqlScriptString:      buildMSSQL2014ColumnsListSqlScriptString,
 	}
 
 }
@@ -54,7 +55,11 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		r = SqlScriptString(strconv.Itoa(x))
 		break
 	case *int:
-		r = SqlScriptString(strconv.Itoa(*x))
+		if x == (*int)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString(strconv.Itoa(*x))
+		}
 		break
 	case int64:
 		r = SqlScriptString(strconv.FormatInt(x, 10))
@@ -151,4 +156,15 @@ func buildMSSQL2014WhereSqlScriptString(columnList, valuesList []SqlScriptString
 
 func buildMSSQL2014SelectAllColumnsSqlScriptString(tablename string) SqlScriptString {
 	return SqlScriptString("SELECT TOP(0) * FROM " + tablename)
+}
+
+// buildMSSQL2014ColumnsListSqlScriptString
+func buildMSSQL2014ColumnsListSqlScriptString(cols []string) (ret SqlScriptString) {
+	for i, c := range cols {
+		if i != 0 {
+			ret += ","
+		}
+		ret += SqlScriptString("[" + c + "]")
+	}
+	return
 }
