@@ -48,7 +48,11 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		r = SqlScriptString("N'" + strings.Replace(x, "'", "''", -1) + "'")
 		break
 	case *string:
-		r = SqlScriptString("N'" + strings.Replace(*x, "'", "''", -1) + "'")
+		if x == (*string)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString("N'" + strings.Replace(*x, "'", "''", -1) + "'")
+		}
 		break
 
 	case int:
@@ -65,27 +69,43 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		r = SqlScriptString(strconv.FormatInt(x, 10))
 		break
 	case *int64:
-		r = SqlScriptString(strconv.FormatInt(*x, 10))
+		if x == (*int64)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString(strconv.FormatInt(*x, 10))
+		}
 		break
 
 	case float32:
 		r = SqlScriptString(strconv.FormatFloat(float64(x), 'f', -1, 32))
 		break
 	case *float32:
-		r = SqlScriptString(strconv.FormatFloat(float64(*x), 'f', -1, 32))
+		if x == (*float32)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString(strconv.FormatFloat(float64(*x), 'f', -1, 32))
+		}
 		break
 	case float64:
 		r = SqlScriptString(strconv.FormatFloat(x, 'f', -1, 64))
 		break
 	case *float64:
-		r = SqlScriptString(strconv.FormatFloat(*x, 'f', -1, 64))
+		if x == (*float64)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString(strconv.FormatFloat(*x, 'f', -1, 64))
+		}
 		break
 
 	case time.Time:
 		r = SqlScriptString("TRY_CAST('" + x.Format(MSSQL2014_TIMEPARSE_TEMPLATE) + "' AS DATETIMEOFFSET)")
 		break
 	case *time.Time:
-		r = SqlScriptString("TRY_CAST('" + x.Format(MSSQL2014_TIMEPARSE_TEMPLATE) + "' AS DATETIMEOFFSET)")
+		if x == (*time.Time)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString("TRY_CAST('" + x.Format(MSSQL2014_TIMEPARSE_TEMPLATE) + "' AS DATETIMEOFFSET)")
+		}
 		break
 
 	case bool:
@@ -96,10 +116,14 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		}
 		break
 	case *bool:
-		if *x {
-			r = "1"
+		if x == (*bool)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
 		} else {
-			r = "0"
+			if *x {
+				r = "1"
+			} else {
+				r = "0"
+			}
 		}
 		break
 
@@ -107,7 +131,11 @@ func convertSomethingIntoMssql2014SqlScriptString(i interface{}) (SqlScriptStrin
 		r = SqlScriptString("0x" + hex.EncodeToString(x))
 		break
 	case *[]byte:
-		r = SqlScriptString("0x" + hex.EncodeToString(*x))
+		if x == (*[]byte)(nil) {
+			r = MSSQL2014_DBNULL_SCRPT_STRING
+		} else {
+			r = SqlScriptString("0x" + hex.EncodeToString(*x))
+		}
 		break
 
 	default:
