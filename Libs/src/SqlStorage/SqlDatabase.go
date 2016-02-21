@@ -26,12 +26,13 @@ func init() {
 
 // Sql database functionality wrapper
 type SqlDatabase struct {
-	conn           *sqlx.DB
-	driverName     string
-	dataSourceName string
-	query          func(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *Error)
-	ping           func(sdb *sqlx.DB) *Error
-	log            Logger.ILogger
+	conn              *sqlx.DB
+	driverName        string
+	dataSourceName    string
+	query             func(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *Error)
+	ping              func(sdb *sqlx.DB) *Error
+	scanRowsIntoSlice func(rows *sql.Rows, sl []interface{}) *Error
+	log               Logger.ILogger
 }
 
 func GetNewSqlDatabase(deriverName, dataSourceName string) (*SqlDatabase, *Error) {

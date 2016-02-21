@@ -126,7 +126,6 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	}
 	whereValueList := make([]SqlDialects.SqlScriptString, len(whereVals))
 	for i, v := range whereVals {
-		ss.log.Debugf("v:= %#v", v)
 		whereValueList[i], err = ss.dialect.ConvertIntoSqlScriptString(v)
 		if err != nil {
 			return err
@@ -136,11 +135,12 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName),
 		ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames),
 		whereCondition, 1)
-	ss.log.Debug(selectQuery)
+	// TODO : Scan Rows
 	_, queryErr := ss.db.Query(string(selectQuery))
 	if queryErr != nil {
 		ss.log.Criticalf("Query %v failed with error: %v", selectQuery, queryErr)
 	}
+
 	return nil
 }
 
