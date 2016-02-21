@@ -16,6 +16,71 @@ func TestConvertSomethingIntoMssql2014SqlScriptString(t *testing.T) {
 		t.Errorf("convertSomethingIntoMssql2014SqlScriptString(nil) returned `%#v` while expected `%#v`", actual, expected)
 	}
 
+	// Test nil`s
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*string)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*string)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*string)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*int)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*int)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*int)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*int64)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*int64)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*int64)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*float32)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*float32)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*float32)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*float64)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*float64)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*float64)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*time.Time)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*time.Time)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*time.Time)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*bool)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*bool)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*bool)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
+	actual, err = convertSomethingIntoMssql2014SqlScriptString((*[]byte)(nil))
+	if err != nil {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*[]byte)(nil)) returned unexpected error: %#v", err)
+	}
+	if actual != expected {
+		t.Errorf("convertSomethingIntoMssql2014SqlScriptString((*[]byte)(nil)) returned `%#v` while expected `%#v`", actual, expected)
+	}
+
 	str := "Test String havin' lots of characters  !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǁǂǃǄǅǆǇǈǉǊǋǌǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǢǣǤǥǦǧǨǩǪǫǬǭǮǯǰǱǲǳǴǵǶǷǸǹǺǻǼǽǾǿȀȁȂȃȄȅȆȇȈȉȊȋȌȍȎȏȐȑȒȓȔȕȖȗȘșȚțȜȝȞȟȠȡȢȣȤȥȦȧȨȩȪȫȬȭȮȯȰȱȲȳȴȵȶȷȸȹȺȻȼȽȾȿɀɁɂɃɄɅɆɇɈɉɊɋɌɍɎɏɐɑɒɓɔɕɖɗɘəɚɛɜɝɞɟɠɡɢɣɤɥɦɧɨɩɪɫɬɭɮɯɰɱɲɳɴɵɶɷɸɹɺɻɼɽɾɿʀʁʂʃʄʅʆʇʈʉʊʋʌʍʎʏʐʑʒʓʔʕʖʗʘʙʚʛʜʝʞʟʠʡʢʣʤʥʦʧʨʩʪʫʬʭʮʯʰʱʲʳʴʵʶʷʸʹʺʻʼʽʾʿˀˁ˂˃˄˅ˆˇˈˉˊˋˌˍˎˏːˑ˒˓˔˕˖˗˘˙˚˛˜˝˞˟ˠˡˢˣˤ˥˦˧˨˩˪˫ˬ˭ˮ˯˰˱˲˳˴˵˶˷˸˹˺˻˼˽˾˿̴̵̶̷̸̡̢̧̨̛̖̗̘̙̜̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼͇͈͉͍͎̀́̂̃̄̅̆̇̈̉̊̋̌̍̎̏̐̑̒̓̔̽̾̿̀́͂̓̈́͆͊͋͌̕̚ͅ͏͓͔͕͖͙͚͐͑͒͗͛ͣͤͥͦͧͨͩͪͫͬͭͮͯ͘͜͟͢͝͞͠͡ͰͱͲͳʹ͵Ͷͷ͸͹ͺͻͼͽ;Ϳ΀΁΂΃΄΅Ά·ΈΉΊ΋Ό΍ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿЀ"
 	expected = SqlScriptString("N'Test String havin'' lots of characters  !\"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſƀƁƂƃƄƅƆƇƈƉƊƋƌƍƎƏƐƑƒƓƔƕƖƗƘƙƚƛƜƝƞƟƠơƢƣƤƥƦƧƨƩƪƫƬƭƮƯưƱƲƳƴƵƶƷƸƹƺƻƼƽƾƿǀǁǂǃǄǅǆǇǈǉǊǋǌǍǎǏǐǑǒǓǔǕǖǗǘǙǚǛǜǝǞǟǠǡǢǣǤǥǦǧǨǩǪǫǬǭǮǯǰǱǲǳǴǵǶǷǸǹǺǻǼǽǾǿȀȁȂȃȄȅȆȇȈȉȊȋȌȍȎȏȐȑȒȓȔȕȖȗȘșȚțȜȝȞȟȠȡȢȣȤȥȦȧȨȩȪȫȬȭȮȯȰȱȲȳȴȵȶȷȸȹȺȻȼȽȾȿɀɁɂɃɄɅɆɇɈɉɊɋɌɍɎɏɐɑɒɓɔɕɖɗɘəɚɛɜɝɞɟɠɡɢɣɤɥɦɧɨɩɪɫɬɭɮɯɰɱɲɳɴɵɶɷɸɹɺɻɼɽɾɿʀʁʂʃʄʅʆʇʈʉʊʋʌʍʎʏʐʑʒʓʔʕʖʗʘʙʚʛʜʝʞʟʠʡʢʣʤʥʦʧʨʩʪʫʬʭʮʯʰʱʲʳʴʵʶʷʸʹʺʻʼʽʾʿˀˁ˂˃˄˅ˆˇˈˉˊˋˌˍˎˏːˑ˒˓˔˕˖˗˘˙˚˛˜˝˞˟ˠˡˢˣˤ˥˦˧˨˩˪˫ˬ˭ˮ˯˰˱˲˳˴˵˶˷˸˹˺˻˼˽˾˿̴̵̶̷̸̡̢̧̨̛̖̗̘̙̜̝̞̟̠̣̤̥̦̩̪̫̬̭̮̯̰̱̲̳̹̺̻̼͇͈͉͍͎̀́̂̃̄̅̆̇̈̉̊̋̌̍̎̏̐̑̒̓̔̽̾̿̀́͂̓̈́͆͊͋͌̕̚ͅ͏͓͔͕͖͙͚͐͑͒͗͛ͣͤͥͦͧͨͩͪͫͬͭͮͯ͘͜͟͢͝͞͠͡ͰͱͲͳʹ͵Ͷͷ͸͹ͺͻͼͽ;Ϳ΀΁΂΃΄΅Ά·ΈΉΊ΋Ό΍ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ΢ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώϏϐϑϒϓϔϕϖϗϘϙϚϛϜϝϞϟϠϡϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰϱϲϳϴϵ϶ϷϸϹϺϻϼϽϾϿЀ'")
 	actual, err = convertSomethingIntoMssql2014SqlScriptString(str)
