@@ -7,6 +7,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"database/sql"
+	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
 )
 
 const (
@@ -84,8 +87,22 @@ type MyTestType struct {
 	Field6 float64 `db:"{'ColName':'field_6', 'Keys':['Val'], 'ResolvedByDb':false}"`
 }
 
+// Test helper func
+func GetNewTestSqlDatabase(driverName, dataSourceName string, actualQuery *string) (*SqlDatabase, *customErrors.Error) {
+	return &SqlDatabase{
+		conn:           nil,
+		driverName:     driverName,
+		dataSourceName: dataSourceName,
+		query: func(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *customErrors.Error) {
+			*actualQuery = query
+			return nil, nil
+		},
+		ping: func(sdb *sqlx.DB) *customErrors.Error { return nil },
+	}, nil
+}
+
 // Test helper function
-func GetTestStorage() SqlStorage {
+func GetTestMSSQL2014Storage() SqlStorage {
 	typ := reflect.TypeOf(MyTestType{})
 	ssc := SqlStorageConfiguration{
 		MappingTag: "db",
@@ -197,7 +214,10 @@ func GetTestStorage() SqlStorage {
 }
 
 func TestGetKeyByKey(t *testing.T) {
-	ss := GetTestStorage()
+	var actualQuery string
+	ss := GetTestMSSQL2014Storage()
+	ss.db, _ = GetNewTestSqlDatabase("", "", &actualQuery)
+
 	field1Val := "Field1"
 	field2Val := 45678
 	mtt := MyTestType{
@@ -209,5 +229,9 @@ func TestGetKeyByKey(t *testing.T) {
 		Field5: 654.321,
 		Field6: 0,
 	}
+	expectedQuery := "SELECT TOP (1) [Id],[field_1],[field_2],[field_3],[field_4],[field_5],[field_6] FROM TestStorageObject WHERE field_1 = N'Field1' AND field_2 = 45678 AND field_3 IS NULL"
 	ss.GetKeyByKey(mtt, "", "BK")
+	if actualQuery != expectedQuery {
+		t.Errorf("Actual query is %v, while expected %v", actualQuery, expectedQuery)
+	}
 }

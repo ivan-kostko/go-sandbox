@@ -137,6 +137,10 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 		ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames),
 		whereCondition, 1)
 	ss.log.Debug(selectQuery)
+	_, queryErr := ss.db.Query(string(selectQuery))
+	if queryErr != nil {
+		ss.log.Criticalf("Query %v failed with error: %v", selectQuery, queryErr)
+	}
 	return nil
 }
 

@@ -21,7 +21,7 @@ const (
 var getNewSqlConnection func(driverName, dataSourceName string) (*SqlDatabase, *Error)
 
 func init() {
-
+	getNewSqlConnection = defaultGetNewSqlConnection
 }
 
 // Sql database functionality wrapper
@@ -34,16 +34,13 @@ type SqlDatabase struct {
 	log            Logger.ILogger
 }
 
-func GetNewSqlConnection(deriverName, dataSourceName string) (*SqlDatabase, *Error) {
+func GetNewSqlDatabase(deriverName, dataSourceName string) (*SqlDatabase, *Error) {
 	return getNewSqlConnection(deriverName, dataSourceName)
 }
 
 func (sd *SqlDatabase) Ping() *Error {
 	if sd.ping == nil {
 		return NewError(AccessViolation, ERR_PINGFUNCNOTSET)
-	}
-	if sd.conn == nil {
-		return NewError(AccessViolation, ERR_CONNOTESTABLISHED)
 	}
 	return sd.ping(sd.conn)
 }
@@ -52,20 +49,28 @@ func (sd *SqlDatabase) Query(query string, args ...interface{}) (*sql.Rows, *Err
 	if sd.query == nil {
 		return nil, NewError(AccessViolation, ERR_QUERYFUNCNOTSET)
 	}
-	if sd.conn == nil {
-		return nil, NewError(AccessViolation, ERR_CONNOTESTABLISHED)
-	}
 	return sd.query(sd.conn, query, args...)
 }
 
-func defaultGetNewSqlConnection(deriverName, dataSourceName string) (*SqlDatabase, *Error) {
-	conn, err := sqlx.Connect(deriverName, dataSourceName)
+func (sd *SqlDatabase) Close() *Error {
+	if sd.conn == nil {
+		return NewError(AccessViolation, ERR_CONNOTESTABLISHED)
+	}
+	err := sd.conn.Close()
+	if err != nil {
+		return NewError(InvalidOperation, err.Error())
+	}
+	return nil
+}
+
+func defaultGetNewSqlConnection(driverName, dataSourceName string) (*SqlDatabase, *Error) {
+	conn, err := sqlx.Connect(driverName, dataSourceName)
 	if err != nil {
 		return nil, NewError(InvalidOperation, err.Error())
 	}
 	sd := SqlDatabase{
 		conn:           conn,
-		driverName:     deriverName,
+		driverName:     driverName,
 		dataSourceName: dataSourceName,
 		query:          query,
 		ping:           ping,
