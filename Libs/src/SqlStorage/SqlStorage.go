@@ -10,11 +10,6 @@ import (
 
 	. "commonInterfaces"
 	. "customErrors"
-
-	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
-
-	_ "github.com/alexbrainman/odbc" // mssql or freetds. Registred as odbc
-	_ "github.com/lib/pq"            // postgreSql. Registred as postrgres
 )
 
 const (
@@ -36,7 +31,7 @@ type SqlStorage struct {
 	log     Logger.ILogger
 	conf    *SqlStorageConfiguration
 	dialect SqlDialects.ISqlDialect
-	conn    *sqlx.DB // keeps connection pool active
+	db      *SqlDatabase // keeps connection pool active
 
 	structureMappings      map[reflect.Type]StructureMapping
 	namesMatch             func(string, string) bool
@@ -80,7 +75,7 @@ func (ss *SqlStorage) Initialize() *Error {
 		return derr
 	}
 	var err error
-	ss.conn, err = sqlx.Connect(ss.conf.DriverName, ss.conf.ConnString)
+	ss.db, err = GetNewSqlDatabase(ss.conf.DriverName, ss.conf.ConnString)
 	if err != nil {
 		return NewError(InvalidOperation, fmt.Sprintf("Failed to connect via driver %v to Sql %v due to error : %v", ss.conf.DriverName, ss.conf.ConnString, err))
 	}
@@ -99,9 +94,9 @@ func (ss *SqlStorage) MustInitialize() {
 
 // Prepare SqlStorage to be garbage collected
 func (ss *SqlStorage) Dispose() {
-	if ss.conn != nil {
-		ss.conn.Close()
-		ss.conn = nil
+	if ss.db != nil {
+		ss.db.Close()
+		ss.db = nil
 	}
 	ss.conf = nil
 	// The dialect shouldn't be disposed by its own, cause it could be in use by other objects. Just remove reference to it
@@ -170,7 +165,7 @@ func (ss *SqlStorage) GetStorageObjectFields(stObjName string) ([]StorageObjectF
 }
 
 func getStorageObjectFields(ss *SqlStorage, stObjName string) ([]StorageObjectField, *Error) {
-	r, err := ss.conn.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
+	r, err := ss.db.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
 	if err != nil {
 		ss.log.Warning(err.Error())
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)

@@ -37,7 +37,7 @@ func TestSqlStorageInitializeWithEmptyConnection(t *testing.T) {
 	}
 	l := Logger.GetStdTerminalLogger()
 	ss := SqlStorage{conf: &ssc, log: l}
-	expectedError := customErrors.NewError(customErrors.InvalidOperation, `Failed to connect via driver  to Sql  due to error : sql: unknown driver "" (forgotten import?)`)
+	expectedError := customErrors.NewError(customErrors.InvalidOperation, `Failed to connect via driver  to Sql  due to error : customErrors.Error{Type:InvalidOperation, Message:sql: unknown driver "" (forgotten import?)}`)
 	err := ss.Initialize()
 	if *err != *expectedError {
 		t.Errorf("SqlStorage.Initialize failed with error %s when expected %s", err.Error(), expectedError.Error())
@@ -64,10 +64,10 @@ func TestSqlStorageInitializeForSuccess(t *testing.T) {
 	if ss.dialect != expectedDialect {
 		t.Errorf("SqlStorage.Initialize sets up dialect %#v when expected %#v", ss.dialect, expectedDialect)
 	}
-	if ss.conn == nil {
+	if ss.db == nil {
 		t.Errorf("SqlStorage.Initialize sets up connection as nil")
 	}
-	if pingErr := ss.conn.Ping(); err != nil {
+	if pingErr := ss.db.Ping(); err != nil {
 		t.Errorf("Ping connection to initialized SqlStorage failed with error: %v", pingErr)
 	}
 }
