@@ -97,7 +97,8 @@ func GetNewTestSqlDatabase(driverName, dataSourceName string, actualQuery *strin
 			*actualQuery = query
 			return nil, nil
 		},
-		ping: func(sdb *sqlx.DB) *customErrors.Error { return nil },
+		ping:              func(sdb *sqlx.DB) *customErrors.Error { return nil },
+		scanRowsIntoSlice: func(rows *sql.Rows, sl []interface{}) *customErrors.Error { return nil },
 	}, nil
 }
 

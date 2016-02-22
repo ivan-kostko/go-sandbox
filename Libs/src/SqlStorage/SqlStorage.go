@@ -132,11 +132,11 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 		}
 	}
 	whereCondition := ss.dialect.BuildWhereSqlScriptString(whereColumnList, whereValueList)
-	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName),
-		ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames),
-		whereCondition, 1)
+	getColumnList := ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames)
+	_, getVals, err := getKeyMapping.Extract(m)
+	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName), getColumnList, whereCondition, 1)
 	// TODO : Scan Rows
-	_, queryErr := ss.db.Query(string(selectQuery))
+	queryErr := ss.db.QueryIntoSlice(string(selectQuery), getVals)
 	if queryErr != nil {
 		ss.log.Criticalf("Query %v failed with error: %v", selectQuery, queryErr)
 	}
@@ -169,7 +169,7 @@ func (ss *SqlStorage) GetStorageObjectFields(stObjName string) ([]StorageObjectF
 }
 
 func getStorageObjectFields(ss *SqlStorage, stObjName string) ([]StorageObjectField, *Error) {
-	r, err := ss.db.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)))
+	r, err := ss.db.Query(string(ss.dialect.BuildSelectAllColumnsSqlScriptString(stObjName)), nil)
 	if err != nil {
 		ss.log.Warning(err.Error())
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGETSTORAGEFIELDS)
