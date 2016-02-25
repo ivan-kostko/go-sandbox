@@ -68,21 +68,31 @@ func NewKey(name string, sample interface{}, sampleFields ...interface{}) (Key, 
 func (k *Key) Extract(i interface{}) ([]string, []interface{}, *Error) {
 	var typ reflect.Type
 	var val reflect.Value
+	var isPtr bool
 	if reflect.TypeOf(i).Kind() == reflect.Ptr {
+		isPtr = true
+	}
+
+	if isPtr {
 		typ = reflect.TypeOf(i).Elem()
 		val = reflect.ValueOf(i).Elem()
 	} else {
 		typ = reflect.TypeOf(i)
 		val = reflect.ValueOf(i)
 	}
-
 	if k.Type != typ {
 		return nil, nil, NewError(InvalidArgument, ERR_KEYTYPENOTMATCH)
 	}
 
 	vals := make([]interface{}, len(k.fieldsIds))
-	for fi := 0; fi < len(k.fieldsIds); fi++ {
-		vals[fi] = (val.Field(k.fieldsIds[fi])).Interface()
+	if isPtr {
+		for fi := 0; fi < len(k.fieldsIds); fi++ {
+			vals[fi] = (val.Field(k.fieldsIds[fi])).Addr().Interface()
+		}
+	} else {
+		for fi := 0; fi < len(k.fieldsIds); fi++ {
+			vals[fi] = (val.Field(k.fieldsIds[fi])).Interface()
+		}
 	}
 	return k.fieldsNames, vals, nil
 }

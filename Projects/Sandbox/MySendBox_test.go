@@ -338,6 +338,26 @@ func BenchmarkReflectFieldByName(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkGetPointerValueInterface(b *testing.B) {
+	s := "TestString"
+	mptt := MyTestPtrType{S: &s}
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		_ = GetPointerValueInterface(&mptt.S)
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkGetPointerValueString(b *testing.B) {
+	s := "TestString"
+	mptt := MyTestPtrType{S: &s}
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		_ = GetPointerValueString(&mptt.S)
+	}
+	b.ReportAllocs()
+}
+
 /*
 func Benchmark(b *testing.B) {
 	for n := 0; n <= b.N; n++ {

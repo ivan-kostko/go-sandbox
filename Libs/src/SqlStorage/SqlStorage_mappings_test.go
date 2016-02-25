@@ -80,16 +80,17 @@ func TestKeyExtractFieldsByPtr(t *testing.T) {
 	sample := MyTestType{}
 	mtt := MyTestType{Field1: "Field1", Field2: []byte("Field2"), Field3: nil, Field4: float64(2345.98765)}
 	expectedStr := []string{"Field1", "Field2", "Field4"}
-	expectedVal := []interface{}{"Field1", []byte("Field2"), float64(2345.98765)}
+	//expectedVal := []interface{}{"Field1", []byte("Field2"), float64(2345.98765)}
+	expectedPtr := []interface{}{&mtt.Field1, &mtt.Field2, &mtt.Field4}
 	k, err := NewKey("TestKeyExtractFields", &sample, &sample.Field1, &sample.Field2, &sample.Field4)
 	if err != nil {
 		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
 	}
 	actualStr, actualVal, err := k.Extract(&mtt)
 	if !(reflect.DeepEqual(actualStr, expectedStr) &&
-		reflect.DeepEqual(actualVal, expectedVal) &&
+		reflect.DeepEqual(actualVal, expectedPtr) &&
 		err == nil) {
-		t.Errorf("k.Extract(&mtt) returned Names: %v Vals: %v Error %v while expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedVal, nil)
+		t.Errorf("k.Extract(&mtt) returned Names: %v Vals: %v Error %v while expected Names: %v Vals: %v Error %v", actualStr, actualVal, err, expectedStr, expectedPtr, nil)
 	}
 
 }
@@ -104,7 +105,8 @@ func TestKeyExtractFieldsByVal(t *testing.T) {
 	sample := MyTestType{}
 	mtt := MyTestType{Field1: "Field1", Field2: []byte("Field2"), Field3: nil, Field4: float64(2345.98765)}
 	expectedStr := []string{"Field3", "Field2", "Field4"}
-	expectedVal := []interface{}{((*int)(nil)), []byte("Field2"), float64(2345.98765)}
+	expectedVal := []interface{}{(*int)(nil), []byte("Field2"), float64(2345.98765)}
+	//expectedPtr := []interface{}{&mtt.Field3, &mtt.Field2, &mtt.Field4}
 	k, err := NewKey("TestKeyExtractFields", &sample, &sample.Field3, &sample.Field2, &sample.Field4)
 	if err != nil {
 		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)

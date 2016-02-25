@@ -178,3 +178,19 @@ func NewFieldsSubset(name string, sample interface{}, sampleFields ...interface{
 	ret.fieldsIds = fids
 	return ret, nil
 }
+
+type MyTestPtrType struct {
+	S *string
+}
+
+func GetPointerValueInterface(i interface{}) interface{} {
+	typ := reflect.TypeOf(i)
+	if typ.Kind() == reflect.Ptr {
+		return GetPointerValueInterface(reflect.ValueOf(i).Elem().Interface())
+	}
+	return i
+}
+
+func GetPointerValueString(s **string) string {
+	return **s
+}
