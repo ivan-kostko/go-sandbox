@@ -112,9 +112,19 @@ func (ss *SqlStorage) Get(m interface{}) *Error {
 
 func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *Error {
 	typ := reflect.TypeOf(m)
-	sm := ss.structureMappings[typ]
-	getKeyMapping := sm.KeyMappings[getKeyName]
-	byKeyMapping := sm.KeyMappings[byKeyName]
+	sm, ok := ss.structureMappings[typ]
+	if !ok {
+		ss.log.Debugf("The type %v is not found as registered", typ)
+	}
+	getKeyMapping, gkmOk := sm.KeyMappings[getKeyName]
+	if !gkmOk {
+		ss.log.Debugf("The getKeyName %v is not found as registered", getKeyName)
+	}
+
+	byKeyMapping, bkmOk := sm.KeyMappings[byKeyName]
+	if !bkmOk {
+		ss.log.Debugf("The byKeyName %v is not found as registered", bkmOk)
+	}
 	whereCols := byKeyMapping.SOFieldsNames
 	whereColumnList := make([]SqlDialects.SqlScriptString, len(whereCols))
 	for i, c := range whereCols {
@@ -122,6 +132,7 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	}
 	_, whereVals, err := byKeyMapping.Extract(m)
 	if err != nil {
+		ss.log.Debugf("The byKeyMapping has registered for type %v while extracting %#v", byKeyMapping.Type.String(), m)
 		return err
 	}
 	whereValueList := make([]SqlDialects.SqlScriptString, len(whereVals))
@@ -135,6 +146,7 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	getColumnList := ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames)
 	_, getVals, err := getKeyMapping.Extract(m)
 	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName), getColumnList, whereCondition, 1)
+	ss.log.Debugf("selectQuery = %v with values %v", selectQuery, getVals)
 	// TODO : Scan Rows
 	queryErr := ss.db.QueryIntoSlice(string(selectQuery), getVals)
 	if queryErr != nil {

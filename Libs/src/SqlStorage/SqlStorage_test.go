@@ -103,8 +103,12 @@ func GetNewTestSqlDatabase(driverName, dataSourceName string, actualQuery *strin
 }
 
 // Test helper function
-func GetTestMSSQL2014Storage() SqlStorage {
-	typ := reflect.TypeOf(MyTestType{})
+func GetTestMSSQL2014Storage(m interface{}) SqlStorage {
+	typ := reflect.TypeOf(m)
+	ktyp := typ
+	if ktyp.Kind() == reflect.Ptr {
+		ktyp = ktyp.Elem()
+	}
 	ssc := SqlStorageConfiguration{
 		MappingTag: "db",
 	}
@@ -175,7 +179,7 @@ func GetTestMSSQL2014Storage() SqlStorage {
 			"PK": KeyMapping{
 				Key: Key{
 					Name:        "PK",
-					Type:        typ,
+					Type:        ktyp,
 					fieldsIds:   []int{0},
 					fieldsNames: []string{"Id"},
 				},
@@ -184,7 +188,7 @@ func GetTestMSSQL2014Storage() SqlStorage {
 			"BK": KeyMapping{
 				Key: Key{
 					Name:        "BK",
-					Type:        typ,
+					Type:        ktyp,
 					fieldsIds:   []int{1, 2, 3},
 					fieldsNames: []string{"Field1", "Field2", "Field3"},
 				},
@@ -193,7 +197,7 @@ func GetTestMSSQL2014Storage() SqlStorage {
 			"Val": KeyMapping{
 				Key: Key{
 					Name:        "Val",
-					Type:        typ,
+					Type:        ktyp,
 					fieldsIds:   []int{3, 4, 5, 6},
 					fieldsNames: []string{"Field3", "Field4", "Field5", "Field6"},
 				},
@@ -202,7 +206,7 @@ func GetTestMSSQL2014Storage() SqlStorage {
 			"": KeyMapping{
 				Key: Key{
 					Name:        "",
-					Type:        typ,
+					Type:        ktyp,
 					fieldsIds:   []int{0, 1, 2, 3, 4, 5, 6},
 					fieldsNames: []string{"Id", "Field1", "Field2", "Field3", "Field4", "Field5", "Field6"},
 				},
@@ -214,10 +218,8 @@ func GetTestMSSQL2014Storage() SqlStorage {
 	return ss
 }
 
-func TestGetKeyByKey(t *testing.T) {
+func TestGetKeyByKeyPtr(t *testing.T) {
 	var actualQuery string
-	ss := GetTestMSSQL2014Storage()
-	ss.db, _ = GetNewTestSqlDatabase("", "", &actualQuery)
 
 	field1Val := "Field1"
 	field2Val := 45678
@@ -230,8 +232,66 @@ func TestGetKeyByKey(t *testing.T) {
 		Field5: 654.321,
 		Field6: 0,
 	}
+	id := 100
+	field3 := 256
+	mttExpected := MyTestType{
+		Id:     &id,
+		Field1: &field1Val,
+		Field2: &field2Val,
+		Field3: &field3,
+		Field4: 765.4321,
+		Field5: 234.56721,
+		Field6: 5,
+	}
+	ss := GetTestMSSQL2014Storage(&mtt)
+	ss.db, _ = GetNewTestSqlDatabase("", "", &actualQuery)
+	ss.db.scanRowsIntoSlice = func(rows *sql.Rows, sl []interface{}) *customErrors.Error {
+		t.Log(sl)
+		*(sl[0].(**int)) = &id
+		**(sl[1].(**string)) = field1Val
+		**(sl[2].(**int)) = field2Val
+		*(sl[3].(**int)) = &field3
+		*(sl[4].(*float64)) = 765.4321
+		*(sl[5].(*float64)) = 234.56721
+		*(sl[6].(*float64)) = 5
+		return nil
+	}
+
 	expectedQuery := "SELECT TOP (1) [Id],[field_1],[field_2],[field_3],[field_4],[field_5],[field_6] FROM TestStorageObject WHERE field_1 = N'Field1' AND field_2 = 45678 AND field_3 IS NULL"
-	ss.GetKeyByKey(mtt, "", "BK")
+	err := ss.GetKeyByKey(&mtt, "", "BK")
+	if err != nil {
+		t.Errorf("GetKeyByKey(&mtt, *,*) failed with error %v", err)
+	}
+	if actualQuery != expectedQuery {
+		t.Errorf("Actual query is %v, while expected %v", actualQuery, expectedQuery)
+	}
+	if mtt != mttExpected {
+		t.Errorf("mtt is %v, \r\n\t while expected %v", mtt, mttExpected)
+	}
+}
+
+func TestGetKeyByKeyVal(t *testing.T) {
+	var actualQuery string
+
+	field1Val := "Field1"
+	field2Val := 45678
+	mtt := MyTestType{
+		Id:     nil,
+		Field1: &field1Val,
+		Field2: &field2Val,
+		Field3: nil,
+		Field4: 123.456,
+		Field5: 654.321,
+		Field6: 0,
+	}
+	ss := GetTestMSSQL2014Storage(mtt)
+	ss.db, _ = GetNewTestSqlDatabase("", "", &actualQuery)
+
+	expectedQuery := "SELECT TOP (1) [Id],[field_1],[field_2],[field_3],[field_4],[field_5],[field_6] FROM TestStorageObject WHERE field_1 = N'Field1' AND field_2 = 45678 AND field_3 IS NULL"
+	err := ss.GetKeyByKey(mtt, "", "BK")
+	if err != nil {
+		t.Errorf("GetKeyByKey(&mtt, *,*) failed with error %v", err)
+	}
 	if actualQuery != expectedQuery {
 		t.Errorf("Actual query is %v, while expected %v", actualQuery, expectedQuery)
 	}
