@@ -6,10 +6,12 @@ import (
 	. "customErrors"
 
 	"database/sql"
-	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
+	//	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
 
 	_ "github.com/alexbrainman/odbc" // mssql or freetds. Registred as odbc
 	_ "github.com/lib/pq"            // postgreSql. Registred as postrgres
+
+	"fmt"
 )
 
 const (
@@ -27,11 +29,11 @@ func init() {
 
 // Sql database functionality wrapper
 type SqlDatabase struct {
-	conn              *sqlx.DB
+	conn              *sql.DB
 	driverName        string
 	dataSourceName    string
-	query             func(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *Error)
-	ping              func(sdb *sqlx.DB) *Error
+	query             func(sdb *sql.DB, query string, args ...interface{}) (*sql.Rows, *Error)
+	ping              func(sdb *sql.DB) *Error
 	scanRowsIntoSlice func(rows *sql.Rows, sl []interface{}) *Error
 	log               Logger.ILogger
 }
@@ -80,7 +82,7 @@ func (sd *SqlDatabase) Close() *Error {
 }
 
 func defaultGetNewSqlConnection(driverName, dataSourceName string) (*SqlDatabase, *Error) {
-	conn, err := sqlx.Connect(driverName, dataSourceName)
+	conn, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
 		return nil, NewError(InvalidOperation, err.Error())
 	}
@@ -95,7 +97,7 @@ func defaultGetNewSqlConnection(driverName, dataSourceName string) (*SqlDatabase
 	return &sd, nil
 }
 
-func query(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *Error) {
+func query(sdb *sql.DB, query string, args ...interface{}) (*sql.Rows, *Error) {
 	rows, err := sdb.Query(query, args...)
 	if err != nil {
 		return nil, NewError(InvalidOperation, err.Error())
@@ -104,7 +106,7 @@ func query(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *Error) 
 	return rows, nil
 }
 
-func ping(sdb *sqlx.DB) *Error {
+func ping(sdb *sql.DB) *Error {
 	err := sdb.Ping()
 	if err != nil {
 		return NewError(InvalidOperation, err.Error())
@@ -113,10 +115,13 @@ func ping(sdb *sqlx.DB) *Error {
 }
 
 func scanRowsIntoSlice(rows *sql.Rows, valPtrs []interface{}) *Error {
-
-	err := rows.Scan(valPtrs...)
-	if err != nil {
-		return NewError(InvalidOperation, err.Error())
+	if rows.Next() {
+		fmt.Println(rows)
+		fmt.Println(valPtrs)
+		err := rows.Scan(valPtrs...)
+		if err != nil {
+			return NewError(InvalidOperation, err.Error())
+		}
 	}
 	return nil
 }

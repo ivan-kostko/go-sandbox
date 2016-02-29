@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"database/sql"
-	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
+	//	"github.com/jmoiron/sqlx" // opensource Sql Extentions lib.
 )
 
 const (
@@ -93,11 +93,11 @@ func GetNewTestSqlDatabase(driverName, dataSourceName string, actualQuery *strin
 		conn:           nil,
 		driverName:     driverName,
 		dataSourceName: dataSourceName,
-		query: func(sdb *sqlx.DB, query string, args ...interface{}) (*sql.Rows, *customErrors.Error) {
+		query: func(sdb *sql.DB, query string, args ...interface{}) (*sql.Rows, *customErrors.Error) {
 			*actualQuery = query
 			return nil, nil
 		},
-		ping:              func(sdb *sqlx.DB) *customErrors.Error { return nil },
+		ping:              func(sdb *sql.DB) *customErrors.Error { return nil },
 		scanRowsIntoSlice: func(rows *sql.Rows, sl []interface{}) *customErrors.Error { return nil },
 	}, nil
 }
