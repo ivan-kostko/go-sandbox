@@ -4,6 +4,7 @@ package SqlStorage
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"Logger"
 	"SqlStorage/SqlDialects"
@@ -52,12 +53,20 @@ type ISqlStorage interface {
 // Generic (I)SqlStorage factory.
 // Tries to get default Logger if log is nil
 // Returns *Error in case of nil configuration or problems on obtaining Logger or error on Initialization
-func GetNewISqlStorage(conf SqlStorageConfiguration, log Logger.ILogger) (ISqlStorage, *Error) {
+func GetNewSqlStorage(conf SqlStorageConfiguration, log Logger.ILogger) (*SqlStorage, *Error) {
 	if log == nil {
 		// try to get default logger by providing empty LoggerConfig
 		log = Logger.GetILogger(Logger.LoggerConfig{})
 	}
-	iss := &SqlStorage{log: log, conf: &conf, getStorageObjectFields: getStorageObjectFields}
+	iss := &SqlStorage{
+		log:  log,
+		conf: &conf,
+		getStorageObjectFields: getStorageObjectFields,
+		namesMatch: func(a, b string) bool {
+			return strings.ToLower(a) == strings.ToLower(b)
+		},
+		structureMappings: make(map[reflect.Type]StructureMapping),
+	}
 	err := iss.Initialize()
 	if err != nil {
 		log.Critical(ERR_FAILEDTOINITIALIZE_SQLSTORAGE, err)
@@ -74,11 +83,12 @@ func (ss *SqlStorage) Initialize() *Error {
 	if derr != nil {
 		return derr
 	}
-	var err error
-	ss.db, err = GetNewSqlDatabase(ss.conf.DriverName, ss.conf.ConnString)
+
+	sdb, err := GetNewSqlDatabase(ss.conf.DriverName, ss.conf.ConnString)
 	if err != nil {
 		return NewError(InvalidOperation, fmt.Sprintf("Failed to connect via driver %v to Sql %v due to error : %v", ss.conf.DriverName, ss.conf.ConnString, err))
 	}
+	ss.db = sdb
 	return nil
 }
 
@@ -94,6 +104,9 @@ func (ss *SqlStorage) MustInitialize() {
 
 // Prepare SqlStorage to be garbage collected
 func (ss *SqlStorage) Dispose() {
+	if ss == nil {
+		return
+	}
 	if ss.db != nil {
 		ss.db.Close()
 		ss.db = nil
