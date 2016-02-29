@@ -140,6 +140,7 @@ func TestNewFieldsSubset(t *testing.T) {
 }
 
 func BenchmarkMap(b *testing.B) {
+	b.Skip()
 	FuncMap = make(map[reflect.Type]func(interface{}) string, 5)
 	FuncMap[reflect.TypeOf("")] = FuncForString
 	FuncMap[reflect.TypeOf(5)] = FuncForInteger
@@ -161,6 +162,7 @@ func BenchmarkMap(b *testing.B) {
 }
 
 func BenchmarkTypeSwitch(b *testing.B) {
+	b.Skip()
 
 	b.ResetTimer()
 	for n := 0; n <= b.N; n++ {
@@ -175,6 +177,7 @@ func BenchmarkTypeSwitch(b *testing.B) {
 }
 
 func BenchmarkConvertIntToStringBySprintf(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertIntToStringBySprintf(n)
 		s += ""
@@ -183,6 +186,7 @@ func BenchmarkConvertIntToStringBySprintf(b *testing.B) {
 }
 
 func BenchmarkConvertIntToStringByStrConv(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertIntToStringByStrConv(n)
 		s += ""
@@ -191,6 +195,7 @@ func BenchmarkConvertIntToStringByStrConv(b *testing.B) {
 }
 
 func BenchmarkConvertFloatToStringBySprintf(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertFloatToStringBySprintf(26535141592653.1415926)
 		s += ""
@@ -199,6 +204,7 @@ func BenchmarkConvertFloatToStringBySprintf(b *testing.B) {
 }
 
 func BenchmarkConvertFloatToStringByStrConv(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertFloatToStringByStrConv(26535141592653.1415926)
 		s += ""
@@ -207,6 +213,7 @@ func BenchmarkConvertFloatToStringByStrConv(b *testing.B) {
 }
 
 func BenchmarkConvertInt64ToStringBySprintf(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertInt64ToStringBySprintf(9223372036854775807)
 		s += ""
@@ -215,6 +222,7 @@ func BenchmarkConvertInt64ToStringBySprintf(b *testing.B) {
 }
 
 func BenchmarkConvertInt64ToStringByStrConv(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertInt64ToStringByStrConv(9223372036854775807)
 		s += ""
@@ -223,6 +231,7 @@ func BenchmarkConvertInt64ToStringByStrConv(b *testing.B) {
 }
 
 func BenchmarkConvertTimeToStringBySprintf(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertTimeToStringBySprintf(time.Now())
 		s += ""
@@ -231,6 +240,7 @@ func BenchmarkConvertTimeToStringBySprintf(b *testing.B) {
 
 }
 func BenchmarkConvertTimeToStringByForma(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertTimeToStringByFormat(time.Now())
 		s += ""
@@ -238,6 +248,7 @@ func BenchmarkConvertTimeToStringByForma(b *testing.B) {
 	b.ReportAllocs()
 }
 func BenchmarkConvertTimeToStringByStringer(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := ConvertTimeToStringByStringer(time.Now())
 		s += ""
@@ -246,6 +257,7 @@ func BenchmarkConvertTimeToStringByStringer(b *testing.B) {
 }
 
 func BenchmarkGenerateStringsReplace(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := GenerateStringsReplace("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
 		s += ""
@@ -253,6 +265,7 @@ func BenchmarkGenerateStringsReplace(b *testing.B) {
 	b.ReportAllocs()
 }
 func BenchmarkGenerateFmtSprintf(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := GenerateFmtSprintf("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
 		s += ""
@@ -260,6 +273,7 @@ func BenchmarkGenerateFmtSprintf(b *testing.B) {
 	b.ReportAllocs()
 }
 func BenchmarkGenerateCustom(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := GenerateCustom("dbo.TestTable", "Col1, Col2, Col3", "Value1, Value3, Value4")
 		s += ""
@@ -268,6 +282,7 @@ func BenchmarkGenerateCustom(b *testing.B) {
 }
 
 func BenchmarkCustomJoinStrings(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := CustomJoinStrings("a", "b", "c", "d", "e", "f", "j", "h", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "22", "3", "5", "777", "8", "9", "0", "1234567890qwertyuiopasdfghjkzxcvbnm")
 		_ = s
@@ -276,6 +291,7 @@ func BenchmarkCustomJoinStrings(b *testing.B) {
 }
 
 func BenchmarkStringsJoinStrings(b *testing.B) {
+	b.Skip()
 	for n := 0; n <= b.N; n++ {
 		s := strings.Join([]string{"a", "b", "c", "d", "e", "f", "j", "h", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "1", "22", "3", "5", "777", "8", "9", "0", "1234567890qwertyuiopasdfghjkzxcvbnm"}, ",")
 		_ = s
@@ -284,6 +300,7 @@ func BenchmarkStringsJoinStrings(b *testing.B) {
 }
 
 func BenchmarkReflectFieldById(b *testing.B) {
+	b.Skip()
 	type MyTestType struct {
 		Field1 int
 		Field2 int
@@ -302,6 +319,7 @@ func BenchmarkReflectFieldById(b *testing.B) {
 }
 
 func BenchmarkReflectFieldByIndex(b *testing.B) {
+	b.Skip()
 	type MyTestType struct {
 		Field1 int
 		Field2 int
@@ -320,6 +338,7 @@ func BenchmarkReflectFieldByIndex(b *testing.B) {
 }
 
 func BenchmarkReflectFieldByName(b *testing.B) {
+	b.Skip()
 	type MyTestType struct {
 		Field1 int
 		Field2 int
@@ -339,6 +358,7 @@ func BenchmarkReflectFieldByName(b *testing.B) {
 }
 
 func BenchmarkGetPointerValueInterface(b *testing.B) {
+	b.Skip()
 	s := "TestString"
 	mptt := MyTestPtrType{S: &s}
 	b.ResetTimer()
@@ -349,11 +369,54 @@ func BenchmarkGetPointerValueInterface(b *testing.B) {
 }
 
 func BenchmarkGetPointerValueString(b *testing.B) {
+	b.Skip()
 	s := "TestString"
 	mptt := MyTestPtrType{S: &s}
 	b.ResetTimer()
 	for n := 0; n <= b.N; n++ {
 		_ = GetPointerValueString(&mptt.S)
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkGetNewBySwitchNew(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		_ = GetNewBySwitchNew((*int)(nil))
+		_ = GetNewBySwitchNew((*string)(nil))
+		_ = GetNewBySwitchNew((*float32)(nil))
+		_ = GetNewBySwitchNew((*float64)(nil))
+		_ = GetNewBySwitchNew((*bool)(nil))
+		_ = GetNewBySwitchNew((*time.Time)(nil))
+		_ = GetNewBySwitchNew((*[]byte)(nil))
+		_ = GetNewBySwitchNew((*int64)(nil))
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkGetNewBySwitch(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		_ = GetNewBySwitch((*int)(nil))
+		_ = GetNewBySwitch((*string)(nil))
+		_ = GetNewBySwitch((*float32)(nil))
+		_ = GetNewBySwitch((*float64)(nil))
+		_ = GetNewBySwitch((*bool)(nil))
+		_ = GetNewBySwitch((*time.Time)(nil))
+		_ = GetNewBySwitch((*[]byte)(nil))
+		_ = GetNewBySwitch((*int64)(nil))
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkGetNewByReflect(b *testing.B) {
+	for n := 0; n <= b.N; n++ {
+		_ = GetNewByReflect((*int)(nil))
+		_ = GetNewByReflect((*string)(nil))
+		_ = GetNewByReflect((*float32)(nil))
+		_ = GetNewByReflect((*float64)(nil))
+		_ = GetNewByReflect((*bool)(nil))
+		_ = GetNewByReflect((*time.Time)(nil))
+		_ = GetNewByReflect((*[]byte)(nil))
+		_ = GetNewByReflect((*int64)(nil))
 	}
 	b.ReportAllocs()
 }

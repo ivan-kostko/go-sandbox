@@ -194,3 +194,198 @@ func GetPointerValueInterface(i interface{}) interface{} {
 func GetPointerValueString(s **string) string {
 	return **s
 }
+
+func GetNewBySwitchNew(i interface{}) interface{} {
+	switch x := i.(type) {
+	case string:
+		return i
+		break
+	case *string:
+		if x == (*string)(nil) {
+			return new(string)
+		} else {
+			return i
+		}
+		break
+	case int:
+		return i
+		break
+	case *int:
+		if x == (*int)(nil) {
+			return new(int)
+		} else {
+			return i
+		}
+		break
+	case int64:
+		return i
+		break
+	case *int64:
+		if x == (*int64)(nil) {
+			return new(int64)
+		} else {
+			return i
+		}
+		break
+	case float64:
+		return i
+		break
+	case *float64:
+		if x == (*float64)(nil) {
+			return new(float64)
+		} else {
+			return i
+		}
+		break
+	case float32:
+		return i
+		break
+	case *float32:
+		if x == (*float32)(nil) {
+			return new(float32)
+		} else {
+			return i
+		}
+		break
+	case time.Time:
+		return i
+		break
+	case *time.Time:
+		if x == (*time.Time)(nil) {
+			return new(time.Time)
+		} else {
+			return i
+		}
+		break
+	case bool:
+		return i
+		break
+	case *bool:
+		if x == (*bool)(nil) {
+			return new(bool)
+		} else {
+			return i
+		}
+		break
+	case []byte:
+		return i
+		break
+	case *[]byte:
+		if x == (*[]byte)(nil) {
+			return new([]byte)
+		} else {
+			return i
+		}
+		break
+	default:
+		return i
+	}
+	return nil
+}
+
+func GetNewBySwitch(i interface{}) interface{} {
+	switch x := i.(type) {
+	case string:
+		return i
+		break
+	case *string:
+		if x == (*string)(nil) {
+			var a string
+			return &a
+		} else {
+			return i
+		}
+		break
+	case int:
+		return i
+		break
+	case *int:
+		if x == (*int)(nil) {
+			var a int
+			return &a
+		} else {
+			return i
+		}
+		break
+	case int64:
+		return i
+		break
+	case *int64:
+		if x == (*int64)(nil) {
+			var a int64
+			return &a
+		} else {
+			return i
+		}
+		break
+	case float64:
+		return i
+		break
+	case *float64:
+		if x == (*float64)(nil) {
+			var a float64
+			return &a
+		} else {
+			return i
+		}
+		break
+	case float32:
+		return i
+		break
+	case *float32:
+		if x == (*float32)(nil) {
+			var a float32
+			return &a
+		} else {
+			return i
+		}
+		break
+	case time.Time:
+		return i
+		break
+	case *time.Time:
+		if x == (*time.Time)(nil) {
+			var a time.Time
+			return &a
+		} else {
+			return i
+		}
+		break
+	case bool:
+		return i
+		break
+	case *bool:
+		if x == (*bool)(nil) {
+			var a bool
+			return &a
+		} else {
+			return i
+		}
+		break
+	case []byte:
+		return i
+		break
+	case *[]byte:
+		if x == (*[]byte)(nil) {
+			var a []byte
+			return &a
+		} else {
+			return i
+		}
+		break
+	default:
+		return i
+	}
+	return nil
+}
+
+func GetNewByReflect(i interface{}) interface{} {
+	val := reflect.ValueOf(i)
+
+	if !val.IsNil() {
+		return i
+	}
+
+	typ := reflect.TypeOf(i)
+	return reflect.New(typ).Interface()
+}
