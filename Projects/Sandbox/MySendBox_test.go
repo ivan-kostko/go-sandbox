@@ -139,6 +139,30 @@ func TestNewFieldsSubset(t *testing.T) {
 	}
 }
 
+func TestGetNewByReflect(t *testing.T) {
+	{
+		expected := new(int)
+		actual := GetNewByReflect((*int)(nil))
+		if _, ok := actual.(*int); !ok {
+			t.Errorf("GetNewByReflect((*int)(nil)) returned %#v whileexpected %#v", actual, expected)
+		}
+	}
+	{
+		expected := (int)(0)
+		actual := GetNewByReflect((int)(0))
+		if _, ok := actual.(int); !ok {
+			t.Errorf("GetNewByReflect((int)(0)) returned %#v whileexpected %#v", actual, expected)
+		}
+	}
+	_ = GetNewByReflect((*string)(nil))
+	_ = GetNewByReflect((*float32)(nil))
+	_ = GetNewByReflect((*float64)(nil))
+	_ = GetNewByReflect((*bool)(nil))
+	_ = GetNewByReflect((*time.Time)(nil))
+	_ = GetNewByReflect((*[]byte)(nil))
+	_ = GetNewByReflect((*int64)(nil))
+}
+
 func BenchmarkMap(b *testing.B) {
 	b.Skip()
 	FuncMap = make(map[reflect.Type]func(interface{}) string, 5)
@@ -423,6 +447,7 @@ func BenchmarkGetNewByReflect(b *testing.B) {
 
 /*
 func Benchmark(b *testing.B) {
+	b.ResetTimer()
 	for n := 0; n <= b.N; n++ {
 		s :=
 		s += ""

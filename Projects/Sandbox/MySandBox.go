@@ -382,10 +382,14 @@ func GetNewBySwitch(i interface{}) interface{} {
 func GetNewByReflect(i interface{}) interface{} {
 	val := reflect.ValueOf(i)
 
+	if val.Kind() != reflect.Ptr {
+		return i
+	}
+
 	if !val.IsNil() {
 		return i
 	}
 
-	typ := reflect.TypeOf(i)
+	typ := reflect.TypeOf(i).Elem()
 	return reflect.New(typ).Interface()
 }
