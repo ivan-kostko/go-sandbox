@@ -9,11 +9,12 @@ import (
 func TestNewValueReferenceIntPtr(t *testing.T) {
 	x := new(int)
 	expected := ValueReference{
-		ptr:                 &x,
-		refrentType:         reflect.TypeOf(new(int)),
-		isReferentPtr:       true,
-		assignReferentValue: assignReferentIntPtrValue,
-		getReferentValue:    getReferentIntPtrValue,
+		ptr:                       &x,
+		refrentType:               reflect.TypeOf(new(int)),
+		isReferentPtr:             true,
+		assignReferentValue:       assignReferentIntPtrValue,
+		getReferentValue:          getReferentIntPtrValue,
+		reinitializeReferentValue: reinitializesReferentIntPtrValue,
 	}
 	actual := NewValueReference(&x)
 	if actual.ptr != expected.ptr {
@@ -30,6 +31,40 @@ func TestNewValueReferenceIntPtr(t *testing.T) {
 	}
 	if reflect.ValueOf(actual.getReferentValue).Pointer() != reflect.ValueOf(expected.getReferentValue).Pointer() {
 		t.Errorf("NewValueReference returned getReferentValue %#v \n\t\t    while expected %#v", actual.getReferentValue, expected.getReferentValue)
+	}
+	if reflect.ValueOf(actual.reinitializeReferentValue).Pointer() != reflect.ValueOf(expected.reinitializeReferentValue).Pointer() {
+		t.Errorf("NewValueReference returned getReferentValue %#v \n\t\t    while expected %#v", actual.reinitializeReferentValue, expected.reinitializeReferentValue)
+	}
+}
+
+func TestNewValueReferenceStringPtr(t *testing.T) {
+	x := new(string)
+	expected := ValueReference{
+		ptr:                       &x,
+		refrentType:               reflect.TypeOf(new(string)),
+		isReferentPtr:             true,
+		assignReferentValue:       assignReferentValueByReflect,
+		getReferentValue:          getReferentValueByReflect,
+		reinitializeReferentValue: reinitializeReferentValueByReflect,
+	}
+	actual := NewValueReference(&x)
+	if actual.ptr != expected.ptr {
+		t.Errorf("NewValueReference returned ptr %#v \n\t\t    while expected %#v", actual.ptr, expected.ptr)
+	}
+	if actual.refrentType != expected.refrentType {
+		t.Errorf("NewValueReference returned refrentType %#v \n\t\t    while expected %#v", actual.refrentType, expected.refrentType)
+	}
+	if actual.isReferentPtr != expected.isReferentPtr {
+		t.Errorf("NewValueReference returned isReferentPtr %#v \n\t\t    while expected %#v", actual.isReferentPtr, expected.isReferentPtr)
+	}
+	if reflect.ValueOf(actual.assignReferentValue).Pointer() != reflect.ValueOf(expected.assignReferentValue).Pointer() {
+		t.Errorf("NewValueReference returned assignReferentValue %#v \n\t\t    while expected %#v", actual.assignReferentValue, expected.assignReferentValue)
+	}
+	if reflect.ValueOf(actual.getReferentValue).Pointer() != reflect.ValueOf(expected.getReferentValue).Pointer() {
+		t.Errorf("NewValueReference returned getReferentValue %#v \n\t\t    while expected %#v", actual.getReferentValue, expected.getReferentValue)
+	}
+	if reflect.ValueOf(actual.reinitializeReferentValue).Pointer() != reflect.ValueOf(expected.reinitializeReferentValue).Pointer() {
+		t.Errorf("NewValueReference returned getReferentValue %#v \n\t\t    while expected %#v", actual.reinitializeReferentValue, expected.reinitializeReferentValue)
 	}
 }
 
@@ -80,12 +115,6 @@ func TestReinitializeReferentValueByReflect(t *testing.T) {
 	}
 }
 
-func TestNil(t *testing.T) {
-	x := new(*(*int))
-	t.Logf("x = %#v", reflect.ValueOf(x).IsNil())
-	t.Logf("x = %#v", x == nil)
-}
-
 /*
 func Test(t *testing.T) {
     expected :=
@@ -100,25 +129,6 @@ func Test(t *testing.T) {
 //--------------------------------------//
 //             Benchmarks               //
 //--------------------------------------//
-
-func BenchmarkAssignGetPurePointer(b *testing.B) {
-	px := new(int)
-	b.ResetTimer()
-	for n := 0; n <= b.N; n++ {
-		TestHelperPurePointer(px, 777)
-	}
-	b.ReportAllocs()
-}
-
-func BenchmarkAssignGetCleverPointer(b *testing.B) {
-	x := interface{}(777)
-	cp := NewValueReference(new(int))
-	b.ResetTimer()
-	for n := 0; n <= b.N; n++ {
-		TestHelperCleverPointer(cp, x)
-	}
-	b.ReportAllocs()
-}
 
 /*
 func Benchmark(b *testing.B) {
