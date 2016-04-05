@@ -2,15 +2,17 @@
 package ValueReference
 
 import (
+	. "database/sql"
+	"errors"
 	"reflect"
-	//"unsafe"
 )
 
 // Declares generic ValueReference interface functionality
-type IValueReference interface {
+type ValueReferencer interface {
 	AssignReferentValue(i interface{})
 	GetReferentValue() interface{}
 	ReInitializeReferentValue()
+	Scanner
 }
 
 //ValueReference container
@@ -66,6 +68,17 @@ func (vr *ValueReference) ReInitializeReferentValue() {
 	vr.reinitializeReferentValue(vr)
 }
 
+// Scanner implementation
+func (vr *ValueReference) Scan(src interface{}) error {
+	srcType := reflect.TypeOf(src)
+	if srcType == vr.refrentType {
+		vr.AssignReferentValue(src)
+		return nil
+	}
+
+	return errors.New("Unsupported type")
+}
+
 // Assigns provided i to int referent
 func assignReferentIntValue(vr *ValueReference, val interface{}) {
 	*((vr.ptr).(*int)) = val.(int)
@@ -86,7 +99,7 @@ func getReferentIntPtrValue(vr *ValueReference) interface{} {
 	return interface{}(*((vr.ptr).(**int)))
 }
 
-// Reinitializes *int referent value if it is nil.
+// ReInitializes *int referent value if it is nil.
 func reinitializesReferentIntPtrValue(vr *ValueReference) {
 	if (*((vr.ptr).(**int))) == (*int)(nil) {
 		(*((vr.ptr).(**int))) = new(int)

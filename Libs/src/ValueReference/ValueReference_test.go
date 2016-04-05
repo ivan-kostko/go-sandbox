@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func TestNewValueReferenceImplementsValueReferencer(t *testing.T) {
+	i := new(interface{})
+	x := NewValueReference(&i)
+	_ = ValueReferencer(&(x))
+}
+
 func TestNewValueReferenceIntPtr(t *testing.T) {
 	x := new(int)
 	expected := ValueReference{
