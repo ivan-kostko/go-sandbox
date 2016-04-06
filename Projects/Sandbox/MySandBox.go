@@ -393,3 +393,27 @@ func GetNewByReflect(i interface{}) interface{} {
 	typ := reflect.TypeOf(i).Elem()
 	return reflect.New(typ).Interface()
 }
+
+type StructWithFunctions struct {
+	Field    int
+	getField func(*StructWithFunctions) int
+}
+
+func GetNewStructWithFunctions() *StructWithFunctions {
+	return &StructWithFunctions{Field: 555, getField: getFieldFunc}
+}
+
+func (swf *StructWithFunctions) GetFieldDirectly() string {
+	return fmt.Sprint(swf.Field)
+}
+
+func (swf *StructWithFunctions) GetFieldByPrivFunc() string {
+	if swf.getField != nil {
+		return fmt.Sprint(swf.getField(swf))
+	}
+	return "swf.getField is nil"
+}
+
+func getFieldFunc(swf *StructWithFunctions) int {
+	return swf.Field
+}

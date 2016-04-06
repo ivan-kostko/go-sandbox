@@ -445,6 +445,26 @@ func BenchmarkGetNewByReflect(b *testing.B) {
 	b.ReportAllocs()
 }
 
+func BenchmarkGetFieldDirectly(b *testing.B) {
+	x := GetNewStructWithFunctions()
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		s := x.GetFieldDirectly()
+		_ = s
+	}
+	b.ReportAllocs()
+}
+
+func BenchmarkGetFieldByPrivFunc(b *testing.B) {
+	x := GetNewStructWithFunctions()
+	b.ResetTimer()
+	for n := 0; n <= b.N; n++ {
+		s := x.GetFieldByPrivFunc()
+		_ = s
+	}
+	b.ReportAllocs()
+}
+
 /*
 func Benchmark(b *testing.B) {
 	b.ResetTimer()
