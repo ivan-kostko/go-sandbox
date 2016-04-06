@@ -3,6 +3,7 @@ package ValueReference
 
 import (
 	. "database/sql"
+	//driver "database/sql/driver"
 	"errors"
 	"reflect"
 )
@@ -13,7 +14,11 @@ type ValueReferencer interface {
 	GetReferentValue() interface{}
 	ReInitializeReferentValue()
 	Scanner
+	//driver.Valuer
 }
+
+// Defines ValueReferencer custom scan function signature
+type ValueReferencerCustomScan func(vr ValueReferencer, src interface{}) error
 
 //ValueReference container
 type ValueReference struct {
@@ -23,11 +28,12 @@ type ValueReference struct {
 	assignReferentValue       func(vr *ValueReference, val interface{})
 	getReferentValue          func(vr *ValueReference) interface{}
 	reinitializeReferentValue func(vr *ValueReference)
+	customScan                ValueReferencerCustomScan
 }
 
 // Generic factory. Fills up container depending on type.
 // NB: In case of performance issues just implement custom functions and extend the type switch to avoid reflection.
-func NewValueReference(iPtr interface{}) ValueReference {
+func New(iPtr interface{}) ValueReference {
 	vr := ValueReference{
 		ptr:           iPtr,
 		refrentType:   (reflect.ValueOf(iPtr).Elem()).Type(),
@@ -53,6 +59,13 @@ func NewValueReference(iPtr interface{}) ValueReference {
 	return vr
 }
 
+// Returns New ValueReferencer
+func NewValueReferencer(iPtr interface{}, customScan ValueReferencerCustomScan) ValueReferencer {
+	vrr := New(iPtr)
+	vrr.customScan = customScan
+	return &(vrr)
+}
+
 // Assigns provided i to referent
 func (vr *ValueReference) AssignReferentValue(i interface{}) {
 	vr.assignReferentValue(vr, i)
@@ -70,13 +83,16 @@ func (vr *ValueReference) ReInitializeReferentValue() {
 
 // Scanner implementation
 func (vr *ValueReference) Scan(src interface{}) error {
-	srcType := reflect.TypeOf(src)
-	if srcType == vr.refrentType {
-		vr.AssignReferentValue(src)
-		return nil
+	if vr.customScan != nil {
+		return vr.customScan(vr, src)
+	} else {
+		srcType := reflect.TypeOf(src)
+		if srcType == vr.refrentType {
+			vr.AssignReferentValue(src)
+			return nil
+		}
 	}
-
-	return errors.New("Unsupported type")
+	return errors.New("Unsupported source type")
 }
 
 // Assigns provided i to int referent

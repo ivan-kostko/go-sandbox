@@ -8,7 +8,7 @@ import (
 
 func TestNewValueReferenceImplementsValueReferencer(t *testing.T) {
 	i := new(interface{})
-	x := NewValueReference(&i)
+	x := New(&i)
 	_ = ValueReferencer(&(x))
 }
 
@@ -22,7 +22,7 @@ func TestNewValueReferenceIntPtr(t *testing.T) {
 		getReferentValue:          getReferentIntPtrValue,
 		reinitializeReferentValue: reinitializesReferentIntPtrValue,
 	}
-	actual := NewValueReference(&x)
+	actual := New(&x)
 	if actual.ptr != expected.ptr {
 		t.Errorf("NewValueReference returned ptr %#v \n\t\t    while expected %#v", actual.ptr, expected.ptr)
 	}
@@ -53,7 +53,7 @@ func TestNewValueReferenceStringPtr(t *testing.T) {
 		getReferentValue:          getReferentValueByReflect,
 		reinitializeReferentValue: reinitializeReferentValueByReflect,
 	}
-	actual := NewValueReference(&x)
+	actual := New(&x)
 	if actual.ptr != expected.ptr {
 		t.Errorf("NewValueReference returned ptr %#v \n\t\t    while expected %#v", actual.ptr, expected.ptr)
 	}
@@ -78,7 +78,7 @@ func TestAssignReferentValue(t *testing.T) {
 	px := new(int)
 	expected := 4
 
-	cp := NewValueReference(px)
+	cp := New(px)
 	cp.AssignReferentValue(4)
 	actual := *px
 	if actual != expected {
@@ -90,7 +90,7 @@ func TestGetReferentValue(t *testing.T) {
 	px := new(int)
 	expected := 5
 
-	cp := NewValueReference(px)
+	cp := New(px)
 	*px = 5
 	actual := cp.GetReferentValue()
 	if actual != expected {
@@ -103,7 +103,7 @@ func TestReinitializeReferentValueByReflect(t *testing.T) {
 	x := (*int)(nil)
 	expected := 0
 
-	vr := NewValueReference(&x)
+	vr := New(&x)
 
 	initialPtr := getReferentIntPtrValue(&vr).(*int)
 	if initialPtr != (*int)(nil) {
