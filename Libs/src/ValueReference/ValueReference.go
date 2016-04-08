@@ -1,26 +1,39 @@
-// PointerTo project PointerTo.go
+// ValueReference project ValueReference.go
 package ValueReference
 
 import (
-	. "database/sql"
-	//driver "database/sql/driver"
-	"errors"
 	"reflect"
 )
 
 // Declares generic ValueReference interface functionality
 type ValueReferencer interface {
+
+	// Returns type of referent.
+	// If ValueReferencer represents *T then the method returns reflect.TypeOf(T)
+	GetReferentType() reflect.Type
+
+	// Returns whether the referent is pointer
+	// If ValueReferencer represents **T then the method returns true
+	// If ValueReferencer represents *T where T is not pointer type, then the method returns false
+	IsReferentPtr() bool
+
+	// Assigns provided value to underlying referent
+	// For.ex. if ValueReferencer represents v := &x , then it assigns i to x
+	// It panics if ValueReferencer represents *T i is not assertable to i.(*T)
 	AssignReferentValue(i interface{})
+
+	// Gets underlying referent value
+	// For.ex. if ValueReferencer represents v := &x , then it returns x as interface{}
 	GetReferentValue() interface{}
+
+	// Reinitializes underlying referent
+	// Applicable if ValueReferencer represents v of type **T, and *v == nil
+	// Then the method instantiates a new(T) reference and assigns it to *v
 	ReInitializeReferentValue()
-	Scanner
-	//driver.Valuer
 }
 
-// Defines ValueReferencer custom scan function signature
-type ValueReferencerCustomScan func(vr ValueReferencer, src interface{}) error
-
-//ValueReference container
+// ValueReference is basic implementation of ValueReferencer interface
+// It holds reference to underlying referent value
 type ValueReference struct {
 	ptr                       interface{}
 	refrentType               reflect.Type
@@ -28,12 +41,23 @@ type ValueReference struct {
 	assignReferentValue       func(vr *ValueReference, val interface{})
 	getReferentValue          func(vr *ValueReference) interface{}
 	reinitializeReferentValue func(vr *ValueReference)
-	customScan                ValueReferencerCustomScan
 }
 
-// Generic factory. Fills up container depending on type.
-// NB: In case of performance issues just implement custom functions and extend the type switch to avoid reflection.
-func New(iPtr interface{}) ValueReference {
+// Generic ValueReferencer factory.
+// It initializes new ValueReference and returns it as ValueReferencer interface.
+//
+// Currently it supports as custom(optimized) dereferencing :
+//     * &int and &(*int)
+//
+// All other type are dereferenced via reflection.
+//
+// TODO : Extend package with custom dereferecing for at least the following types:
+//    * &string, &(*string)
+//    * &int64, &(*int64)
+//    * &time.Time, &(*time.Time)
+//    * &[]byte
+//    * &float32,&float64, &(*float32), &(*float64)
+func New(iPtr interface{}) ValueReferencer {
 	vr := ValueReference{
 		ptr:           iPtr,
 		refrentType:   (reflect.ValueOf(iPtr).Elem()).Type(),
@@ -51,19 +75,13 @@ func New(iPtr interface{}) ValueReference {
 		vr.reinitializeReferentValue = reinitializesReferentIntPtrValue
 		break
 	default:
+		// Evrything by Reflection
 		vr.assignReferentValue = assignReferentValueByReflect
 		vr.getReferentValue = getReferentValueByReflect
 		vr.reinitializeReferentValue = reinitializeReferentValueByReflect
 		break
 	}
-	return vr
-}
-
-// Returns New ValueReferencer
-func NewValueReferencer(iPtr interface{}, customScan ValueReferencerCustomScan) ValueReferencer {
-	vrr := New(iPtr)
-	vrr.customScan = customScan
-	return &(vrr)
+	return &vr
 }
 
 // Assigns provided i to referent
@@ -79,20 +97,6 @@ func (vr *ValueReference) GetReferentValue() interface{} {
 // Reinitializes referent with new pointer if it is nil
 func (vr *ValueReference) ReInitializeReferentValue() {
 	vr.reinitializeReferentValue(vr)
-}
-
-// Scanner implementation
-func (vr *ValueReference) Scan(src interface{}) error {
-	if vr.customScan != nil {
-		return vr.customScan(vr, src)
-	} else {
-		srcType := reflect.TypeOf(src)
-		if srcType == vr.refrentType {
-			vr.AssignReferentValue(src)
-			return nil
-		}
-	}
-	return errors.New("Unsupported source type")
 }
 
 // Assigns provided i to int referent
