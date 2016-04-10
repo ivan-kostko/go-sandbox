@@ -35,9 +35,8 @@ type ValueReferencer interface {
 // ValueReference is basic implementation of ValueReferencer interface
 // It holds reference to underlying referent value
 type ValueReference struct {
-	ptr                       interface{}
-	refrentType               reflect.Type
-	isReferentPtr             bool
+	reference                 interface{}
+	referentType              reflect.Type
 	assignReferentValue       func(vr *ValueReference, val interface{})
 	getReferentValue          func(vr *ValueReference) interface{}
 	reinitializeReferentValue func(vr *ValueReference)
@@ -51,23 +50,22 @@ type ValueReference struct {
 //
 // All other type are dereferenced via reflection.
 //
-// TODO : Extend package with custom dereferecing for at least the following types:
-//    * &string, &(*string)
-//    * &int64, &(*int64)
-//    * &time.Time, &(*time.Time)
-//    * &[]byte
-//    * &float32,&float64, &(*float32), &(*float64)
+// TODO(me):
+// Extend package with custom dereferecing for at least the following types:
+//  &string, &(*string)
+//  &int64, &(*int64)
+//  &time.Time, &(*time.Time)
+//  &[]byte
+//  &float32,&float64, &(*float32), &(*float64)
 func New(iPtr interface{}) ValueReferencer {
 	vr := ValueReference{
-		ptr:           iPtr,
-		refrentType:   (reflect.ValueOf(iPtr).Elem()).Type(),
-		isReferentPtr: ((reflect.ValueOf(iPtr).Elem()).Type().Kind() == reflect.Ptr),
+		reference: iPtr,
 	}
 	switch iPtr.(type) {
 	case *int:
 		vr.assignReferentValue = assignReferentIntValue
 		vr.getReferentValue = getReferentIntValue
-		vr.reinitializeReferentValue = func(vr *ValueReference) { return } // int wont be nil
+		vr.reinitializeReferentValue = nil // int wont be nil
 		break
 	case **int:
 		vr.assignReferentValue = assignReferentIntPtrValue
@@ -84,6 +82,23 @@ func New(iPtr interface{}) ValueReferencer {
 	return &vr
 }
 
+// Returns type of referent.
+// It is implemented as Lazy initialization, so on a first call could be slow
+// If ValueReferencer represents *T then the method returns reflect.TypeOf(T)
+func (vr *ValueReference) GetReferentType() reflect.Type {
+	if vr.referentType == nil {
+		vr.referentType = (reflect.ValueOf(vr.reference).Elem()).Type()
+	}
+	return vr.referentType
+}
+
+// Returns whether the referent is pointer
+// If ValueReferencer represents **T then the method returns true
+// If ValueReferencer represents *T where T is not pointer type, then the method returns false
+func (vr *ValueReference) IsReferentPtr() bool {
+	return vr.GetReferentType().Kind() == reflect.Ptr
+}
+
 // Assigns provided i to referent
 func (vr *ValueReference) AssignReferentValue(i interface{}) {
 	vr.assignReferentValue(vr, i)
@@ -96,56 +111,58 @@ func (vr *ValueReference) GetReferentValue() interface{} {
 
 // Reinitializes referent with new pointer if it is nil
 func (vr *ValueReference) ReInitializeReferentValue() {
-	vr.reinitializeReferentValue(vr)
+	if vr.reinitializeReferentValue != nil {
+		vr.reinitializeReferentValue(vr)
+	}
 }
 
 // Assigns provided i to int referent
 func assignReferentIntValue(vr *ValueReference, val interface{}) {
-	*((vr.ptr).(*int)) = val.(int)
+	*((vr.reference).(*int)) = val.(int)
 }
 
 // Gets int referent value.
 func getReferentIntValue(vr *ValueReference) interface{} {
-	return interface{}(*((vr.ptr).(*int)))
+	return interface{}(*((vr.reference).(*int)))
 }
 
 // Assigns provided i to *int referent
 func assignReferentIntPtrValue(vr *ValueReference, val interface{}) {
-	*((vr.ptr).(**int)) = val.(*int)
+	*((vr.reference).(**int)) = val.(*int)
 }
 
 // Gets *int referent value.
 func getReferentIntPtrValue(vr *ValueReference) interface{} {
-	return interface{}(*((vr.ptr).(**int)))
+	return interface{}(*((vr.reference).(**int)))
 }
 
 // ReInitializes *int referent value if it is nil.
 func reinitializesReferentIntPtrValue(vr *ValueReference) {
-	if (*((vr.ptr).(**int))) == (*int)(nil) {
-		(*((vr.ptr).(**int))) = new(int)
+	if (*((vr.reference).(**int))) == (*int)(nil) {
+		(*((vr.reference).(**int))) = new(int)
 	}
 	return
 }
 
 func assignReferentValueByReflect(vr *ValueReference, i interface{}) {
-	reflect.ValueOf(vr.ptr).Elem().Set(reflect.ValueOf(i))
+	reflect.ValueOf(vr.reference).Elem().Set(reflect.ValueOf(i))
 }
 
 func getReferentValueByReflect(vr *ValueReference) interface{} {
-	return reflect.ValueOf(vr.ptr).Elem().Interface()
+	return reflect.ValueOf(vr.reference).Elem().Interface()
 }
 
 func reinitializeReferentValueByReflect(vr *ValueReference) {
-	if !vr.isReferentPtr {
+	if !vr.IsReferentPtr() {
 		return
 	}
 
-	val := reflect.ValueOf(vr.ptr).Elem()
+	val := reflect.ValueOf(vr.reference).Elem()
 	if !val.IsNil() {
 		return
 	}
 
-	val.Set(reflect.New(vr.refrentType.Elem()))
+	val.Set(reflect.New(vr.referentType.Elem()))
 }
 
 /*
