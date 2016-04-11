@@ -17,10 +17,10 @@ type ValueReferencer interface {
 	// If ValueReferencer represents *T where T is not pointer type, then the method returns false
 	IsReferentPtr() bool
 
-	// Assigns provided value to underlying referent
-	// For.ex. if ValueReferencer represents v := &x , then it assigns i to x
+	// Sets provided value to underlying referent
+	// For.ex. if ValueReferencer represents v := &x , then it sets i to x
 	// It panics if ValueReferencer represents *T i is not assertable to i.(*T)
-	AssignReferentValue(i interface{})
+	SetReferentValue(i interface{})
 
 	// Gets underlying referent value
 	// For.ex. if ValueReferencer represents v := &x , then it returns x as interface{}
@@ -28,7 +28,7 @@ type ValueReferencer interface {
 
 	// Reinitializes underlying referent
 	// Applicable if ValueReferencer represents v of type **T, and *v == nil
-	// Then the method instantiates a new(T) reference and assigns it to *v
+	// Then the method instantiates a new(T) reference and sets it to *v
 	ReInitializeReferentValue()
 }
 
@@ -37,7 +37,7 @@ type ValueReferencer interface {
 type ValueReference struct {
 	reference                 interface{}
 	referentType              reflect.Type
-	assignReferentValue       func(vr *ValueReference, val interface{})
+	setReferentValue          func(vr *ValueReference, val interface{})
 	getReferentValue          func(vr *ValueReference) interface{}
 	reinitializeReferentValue func(vr *ValueReference)
 }
@@ -63,18 +63,18 @@ func New(iPtr interface{}) ValueReferencer {
 	}
 	switch iPtr.(type) {
 	case *int:
-		vr.assignReferentValue = assignReferentIntValue
+		vr.setReferentValue = setReferentIntValue
 		vr.getReferentValue = getReferentIntValue
 		vr.reinitializeReferentValue = nil // int wont be nil
 		break
 	case **int:
-		vr.assignReferentValue = assignReferentIntPtrValue
+		vr.setReferentValue = setReferentIntPtrValue
 		vr.getReferentValue = getReferentIntPtrValue
 		vr.reinitializeReferentValue = reinitializesReferentIntPtrValue
 		break
 	default:
 		// Evrything by Reflection
-		vr.assignReferentValue = assignReferentValueByReflect
+		vr.setReferentValue = setReferentValueByReflect
 		vr.getReferentValue = getReferentValueByReflect
 		vr.reinitializeReferentValue = reinitializeReferentValueByReflect
 		break
@@ -83,8 +83,9 @@ func New(iPtr interface{}) ValueReferencer {
 }
 
 // Returns type of referent.
-// It is implemented as Lazy initialization, so on a first call could be slow
-// If ValueReferencer represents *T then the method returns reflect.TypeOf(T)
+// If ValueReferencer represents *T then the method returns reflect.TypeOf(T).
+//
+// NB: It is implemented as Lazy initialization, so on a first call could be slow.
 func (vr *ValueReference) GetReferentType() reflect.Type {
 	if vr.referentType == nil {
 		vr.referentType = (reflect.ValueOf(vr.reference).Elem()).Type()
@@ -92,32 +93,38 @@ func (vr *ValueReference) GetReferentType() reflect.Type {
 	return vr.referentType
 }
 
-// Returns whether the referent is pointer
-// If ValueReferencer represents **T then the method returns true
-// If ValueReferencer represents *T where T is not pointer type, then the method returns false
+// Returns whether the referent is pointer.
+// If ValueReferencer represents **T then the method returns true.
+// If ValueReferencer represents *T where T is not pointer type, then the method returns false.
 func (vr *ValueReference) IsReferentPtr() bool {
 	return vr.GetReferentType().Kind() == reflect.Ptr
 }
 
-// Assigns provided i to referent
-func (vr *ValueReference) AssignReferentValue(i interface{}) {
-	vr.assignReferentValue(vr, i)
+// Sets provided value to underlying referent.
+// For.ex. if ValueReferencer represents v := &x , then it sets i to x.
+// It panics if ValueReferencer represents &x where x is of type T and i is not assertable to i.(T)
+func (vr *ValueReference) SetReferentValue(i interface{}) {
+	vr.setReferentValue(vr, i)
 }
 
-// Gets referent value.
+// Gets underlying referent value.
+// For.ex. if ValueReferencer represents v := &x , then it returns x as interface{}.
 func (vr *ValueReference) GetReferentValue() interface{} {
 	return vr.getReferentValue(vr)
 }
 
-// Reinitializes referent with new pointer if it is nil
+// Reinitializes underlying referent.
+//
+// Applicable if ValueReferencer represents v of type **T, and *v == nil.
+// Then the method instantiates a new(T) reference and assigns it to *v.
 func (vr *ValueReference) ReInitializeReferentValue() {
 	if vr.reinitializeReferentValue != nil {
 		vr.reinitializeReferentValue(vr)
 	}
 }
 
-// Assigns provided i to int referent
-func assignReferentIntValue(vr *ValueReference, val interface{}) {
+// Sets provided i to int referent
+func setReferentIntValue(vr *ValueReference, val interface{}) {
 	*((vr.reference).(*int)) = val.(int)
 }
 
@@ -126,8 +133,8 @@ func getReferentIntValue(vr *ValueReference) interface{} {
 	return interface{}(*((vr.reference).(*int)))
 }
 
-// Assigns provided i to *int referent
-func assignReferentIntPtrValue(vr *ValueReference, val interface{}) {
+// Sets provided i to *int referent
+func setReferentIntPtrValue(vr *ValueReference, val interface{}) {
 	*((vr.reference).(**int)) = val.(*int)
 }
 
@@ -144,7 +151,7 @@ func reinitializesReferentIntPtrValue(vr *ValueReference) {
 	return
 }
 
-func assignReferentValueByReflect(vr *ValueReference, i interface{}) {
+func setReferentValueByReflect(vr *ValueReference, i interface{}) {
 	reflect.ValueOf(vr.reference).Elem().Set(reflect.ValueOf(i))
 }
 
@@ -168,8 +175,8 @@ func reinitializeReferentValueByReflect(vr *ValueReference) {
 /*
 //   The template for a custom type functions
 
-// Assigns provided i to <Type> referent
-func assignReferentIntValue(vr *ValueReference, val <Type>erface{}) {
+// Sets provided i to <Type> referent
+func setReferentIntValue(vr *ValueReference, val <Type>erface{}) {
 	*((vr.ptr).(*<Type>)) = val.(<Type>)
 }
 
@@ -178,8 +185,8 @@ func getReferentIntValue(vr *ValueReference) <Type>erface{} {
 	return <Type>erface{}(*((vr.ptr).(*<Type>)))
 }
 
-// Assigns provided i to *<Type> referent
-func assignReferentIntPtrValue(vr *ValueReference, val <Type>erface{}) {
+// Sets provided i to *<Type> referent
+func setReferentIntPtrValue(vr *ValueReference, val <Type>erface{}) {
 	*((vr.ptr).(**<Type>)) = val.(*<Type>)
 }
 
