@@ -86,7 +86,7 @@ func TestKeyExtractFieldsByPtr(t *testing.T) {
 	if err != nil {
 		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
 	}
-	actualStr, actualVal, err := k.Extract(&mtt)
+	actualStr, actualVal, err := k.ExtractFrom(&mtt)
 	if !(reflect.DeepEqual(actualStr, expectedStr) &&
 		reflect.DeepEqual(actualVal, expectedPtr) &&
 		err == nil) {
@@ -111,7 +111,7 @@ func TestKeyExtractFieldsByVal(t *testing.T) {
 	if err != nil {
 		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
 	}
-	actualStr, actualVal, err := k.Extract(mtt)
+	actualStr, actualVal, err := k.ExtractFrom(mtt)
 	if !(reflect.DeepEqual(actualStr, expectedStr) &&
 		reflect.DeepEqual(actualVal, expectedVal) &&
 		err == nil) {
@@ -134,7 +134,7 @@ func TestKeyAssignFieldsByVals(t *testing.T) {
 	if err != nil {
 		t.Errorf("NewKey returned *Error %v while expected %v", err, nil)
 	}
-	err = k.Assign(&actualStruct, []interface{}{"NewField1Value", []byte("AKind Of New Field2"), float64(54321.56789)})
+	err = k.AssignTo(&actualStruct, []interface{}{"NewField1Value", []byte("AKind Of New Field2"), float64(54321.56789)})
 	if !(reflect.DeepEqual(actualStruct, expectedStruct) && err == nil) {
 		t.Errorf("k.Assign(&mtt,...) assigned : %v with Error %v \r\n\t\t\t while expected %v with Error %v", actualStruct, err, expectedStruct, nil)
 	}
@@ -312,7 +312,7 @@ func BenchmarkKeyExtract6fields(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n <= b.N; n++ {
-		_, _, _ = k.Extract(&mtt)
+		_, _, _ = k.ExtractFrom(&mtt)
 	}
 	b.ReportAllocs()
 }
@@ -360,7 +360,7 @@ func BenchmarkKeyExtract4fields(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n <= b.N; n++ {
-		_, _, _ = k.Extract(&mtt)
+		_, _, _ = k.ExtractFrom(&mtt)
 	}
 	b.ReportAllocs()
 }
@@ -408,7 +408,7 @@ func BenchmarkKeyExtract2fields(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n <= b.N; n++ {
-		_, _, _ = k.Extract(&mtt)
+		_, _, _ = k.ExtractFrom(&mtt)
 	}
 	b.ReportAllocs()
 }

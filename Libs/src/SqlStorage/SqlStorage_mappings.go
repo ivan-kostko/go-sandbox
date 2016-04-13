@@ -65,7 +65,7 @@ func NewKey(name string, sample interface{}, sampleFields ...interface{}) (Key, 
 
 // Extracts fields names and values for given instance as arrays
 // NB: returns Error InvalidArgument if type registered for key is not the same as for given instance
-func (k *Key) Extract(i interface{}) ([]string, []interface{}, *Error) {
+func (k *Key) ExtractFrom(i interface{}) ([]string, []interface{}, *Error) {
 	var typ reflect.Type
 	var val reflect.Value
 	var isPtr bool
@@ -100,7 +100,7 @@ func (k *Key) Extract(i interface{}) ([]string, []interface{}, *Error) {
 // Assigns values from array into given instance fields
 // NB: returns Error InvalidArgument if type registered for key is not the same as for given instance
 //     returns Error InvalidArgument if i is not a kind of pointer
-func (k *Key) Assign(i interface{}, vals []interface{}) *Error {
+func (k *Key) AssignTo(i interface{}, vals []interface{}) *Error {
 	var typ reflect.Type
 	var val reflect.Value
 	if reflect.TypeOf(i).Kind() == reflect.Ptr {
@@ -163,7 +163,7 @@ func (ss *SqlStorage) RegisterType(storageObjectName string, st interface{}, key
 	typ := reflect.TypeOf(st)
 	sm, err := ss.generateStructureMapping(storageObjectName, typ)
 	if err != nil {
-		ss.log.Critical(err)
+		//ss.log.Critical(err)
 		return err
 	}
 	if sm == nil {
@@ -196,6 +196,7 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 		ss.log.Error(ERR_FAILEDTOGENMAP, err)
 		return nil, NewError(InvalidOperation, ERR_FAILEDTOGENMAP)
 	}
+	//ss.log.Debug("storageObjectFields", storageObjectFields)
 
 	// loop over fields generating field mapping for eachone
 	for fi := 0; fi < c; fi++ {
