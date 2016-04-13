@@ -143,7 +143,7 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	for i, c := range whereCols {
 		whereColumnList[i] = SqlDialects.SqlScriptString(c)
 	}
-	_, whereVals, err := byKeyMapping.Extract(m)
+	_, whereVals, err := byKeyMapping.ExtractFrom(m)
 	if err != nil {
 		ss.log.Debugf("The byKeyMapping has registered for type %v while extracting %#v", byKeyMapping.Type.String(), m)
 		return err
@@ -157,7 +157,7 @@ func (ss *SqlStorage) GetKeyByKey(m interface{}, getKeyName, byKeyName string) *
 	}
 	whereCondition := ss.dialect.BuildWhereSqlScriptString(whereColumnList, whereValueList)
 	getColumnList := ss.dialect.BuildColumnsListSqlScriptString(getKeyMapping.SOFieldsNames)
-	_, getVals, err := getKeyMapping.Extract(m)
+	_, getVals, err := getKeyMapping.ExtractFrom(m)
 	selectQuery := ss.dialect.BuildSelectSqlScriptString(SqlDialects.SqlScriptString(sm.StorageObjectName), getColumnList, whereCondition, 1)
 	ss.log.Debugf("selectQuery = %v with values %v", selectQuery, getVals)
 	// TODO : Scan Rows
