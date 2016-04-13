@@ -13,21 +13,30 @@ import (
 	. "customErrors"
 )
 
+// Standard errors
 const (
 	ERR_FAILEDTOINITIALIZE_SQLSTORAGE = "Failed to initialize SqlStorage due to error "
 	ERR_FAILEDTOGETSTORAGEFIELDS      = "Failed to get storage object foelds"
 	ERR_FUNCNOTYETIMPLEMENTED         = "The function is not yet implemented"
 )
 
+// Represents SqlStorage configuration
 type SqlStorageConfiguration struct {
-	DriverName   string
-	ConnString   string
+	// The name of GO-ODBC database/driver used to connect to database
+	DriverName string
+
+	// Connection string passed to connect
+	// NB: Should be driver specific
+	ConnString string
+
+	// The alias/name of registered SqlStorage/SqlDialects dialect
 	DialectAlias string
-	MappingTag   string
+
+	// The model tag used to represent TagJsonContent
+	MappingTag string
 }
 
 // Represents generic abstract Sql storage
-//
 type SqlStorage struct {
 	log     Logger.ILogger
 	conf    *SqlStorageConfiguration

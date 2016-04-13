@@ -150,7 +150,7 @@ type StructureMapping struct {
 
 // Field tag JSON structure
 // Helper structure to parse mapping tag's JSON
-type TagJsonStruct struct {
+type TagJsonContent struct {
 	ColName          string
 	Keys             []string
 	AssignedByDb     bool
@@ -202,7 +202,7 @@ func (ss *SqlStorage) generateStructureMapping(storageObjectName string, typ ref
 	for fi := 0; fi < c; fi++ {
 		// Get field tag
 		fieldTagString := typ.Field(fi).Tag.Get(ss.conf.MappingTag)
-		fieldTagValue := new(TagJsonStruct)
+		fieldTagValue := new(TagJsonContent)
 
 		// if Tag is not empty - parse as Json
 		if fieldTagString != EMPTY_STRING {
