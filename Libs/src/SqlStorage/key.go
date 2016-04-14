@@ -6,6 +6,7 @@ import (
 	"reflect"
 )
 
+// Key standadt errors
 const (
 	ERR_FIELDPTROUTOFRNG = "sampleFields pointer is out of sample range"
 	ERR_KEYTYPENOTMATCH  = "Key type is differ from provided"
@@ -21,7 +22,7 @@ type Key struct {
 }
 
 // Creates new FieldsSubset based on the sample pointer and the samples fields pointers
-// It returns InvalidOperation Error if any of fields does not belong to the sample
+//     returns InvalidOperation Error if any of fields does not belong to the sample
 func NewKey(name string, sample interface{}, sampleFields ...interface{}) (Key, *Error) {
 	typ := reflect.TypeOf(sample).Elem()
 	ret := Key{Name: name, Type: typ}
@@ -54,7 +55,7 @@ func NewKey(name string, sample interface{}, sampleFields ...interface{}) (Key, 
 }
 
 // Extracts fields names and values for given instance as arrays
-// NB: returns Error InvalidArgument if type registered for key is not the same as for given instance
+//     returns Error InvalidArgument if type registered for key is not the same as for given instance
 func (k *Key) ExtractFrom(i interface{}) ([]string, []interface{}, *Error) {
 	var typ reflect.Type
 	var val reflect.Value
@@ -88,7 +89,7 @@ func (k *Key) ExtractFrom(i interface{}) ([]string, []interface{}, *Error) {
 }
 
 // Assigns values from array into given instance fields
-// NB: returns Error InvalidArgument if type registered for key is not the same as for given instance
+//     returns Error InvalidArgument if type registered for key is not the same as for given instance
 //     returns Error InvalidArgument if i is not a kind of pointer
 func (k *Key) AssignTo(i interface{}, vals []interface{}) *Error {
 	var typ reflect.Type
