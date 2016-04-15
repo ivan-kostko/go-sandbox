@@ -1,12 +1,13 @@
 // Errors project Errors.go
 // The package contains general error exteded functionality
-package customErrors
+package CustomErrors
 
 import (
 	"fmt"
 )
 
 //go:generate stringer -type=ErrorType
+
 type ErrorType int
 
 const (
@@ -17,14 +18,13 @@ const (
 	Nonsupported
 )
 
-// Represents custom error
-
+// Represents custom error as tuple Type + Message.
 type Error struct {
 	Type    ErrorType
 	Message string
 }
 
-// Implementation of error interface
+// Implementation of standart error interface
 func (e Error) Error() string {
 	return fmt.Sprintf("%T{Type:%s, Message:%s}", e, e.Type, e.Message)
 }

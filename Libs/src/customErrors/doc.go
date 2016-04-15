@@ -1,6 +1,10 @@
 // Errors project doc.go
 
 /*
-Errors document
+
+The package implements extended error functionality, allowing slightly better error handling than golang standart one.
+
+It gives a possibility to define further behaviour based on error type while message contains better error description.
+
 */
-package customErrors
+package CustomErrors
