@@ -1,9 +1,7 @@
-// commonInterfaces project commonInterfaces.go
-// The package contains commenly used interfaces
-package commonInterfaces
+package CommonInterfaces
 
 import (
-	. "customErrors"
+	. "CustomErrors"
 )
 
 // Interface represents Initialize methood
@@ -20,7 +18,7 @@ type MustInitializer interface {
 
 // Interface represents Dispose method
 type Disposer interface {
-	// The method "cleans" all internal referencies to let current instance to be garbage collected
+	// The method "cleans" all internal references to let current instance to be garbage collected
 	Dispose()
 }
 
