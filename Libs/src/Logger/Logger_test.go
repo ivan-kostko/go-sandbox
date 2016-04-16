@@ -42,7 +42,7 @@ func TestLoggerContainerPrintLikeFunctions(t *testing.T) {
 
 	ilf := func(level Level, args ...interface{}) { actualLevel = level; actualArgs = args }
 
-	l := GetNewLogContainer(ilf)
+	l := GetNewLogAdapter(ilf)
 
 	// Just Print like functions
 
@@ -112,7 +112,7 @@ func TestLoggerContainerPrintFLikeFunctions(t *testing.T) {
 
 	ilf := func(level Level, args ...interface{}) { actualLevel = level; actualArgs = args }
 
-	l := GetNewLogContainer(ilf)
+	l := GetNewLogAdapter(ilf)
 
 	// Just PrintF like functions
 

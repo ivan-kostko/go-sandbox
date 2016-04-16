@@ -1,14 +1,10 @@
-// Logger project Logger.go
 // Package Logger provides a common interface and wrapper implementation for logging libraries.
-// Contains predefined loggers: StderrLogger and MockLogger
+// Contains predefined loggers: StderrLogger(prints error log to Std out)
+
 package Logger
 
 import (
 	"fmt"
-)
-
-const (
-	ERR_FAILEDTOINSTANTIATEDEFAULTLOGGER = "Failed to instantiate default logger"
 )
 
 //go:generate stringer -type=Level
@@ -94,116 +90,118 @@ type ILogger interface {
 	Logf(level Level, format string, args ...interface{})
 }
 
-// LogContainer represents adapter structure (satisfying ILogger interface) and redirecting all calls of helper functions to Log() function
-// Could be used for mocking and quick simple intro of any logger
+// LogAdapter adapts logging function func(level Level, args ...interface{}) to ILogger interface.
+// Could be used for mocking and quick simple introduction of any logger
+//
 // NB: For production loggers it is better to create its own adapter
-type LogContainer struct {
+type LogAdapter struct {
 	internalLogFunction func(level Level, args ...interface{})
 }
 
-// LogContainer factory
-func GetNewLogContainer(intLog func(level Level, args ...interface{})) ILogger {
-	lc := new(LogContainer)
+// LogAdapter factory.
+// Instantiates a new instance of LogAdapter adapting intLog to ILogger interface
+func GetNewLogAdapter(intLog func(level Level, args ...interface{})) *LogAdapter {
+	lc := new(LogAdapter)
 	lc.internalLogFunction = intLog
 	return lc
 }
 
 // Emergency logs with an emergency level
-func (lc *LogContainer) Emergency(args ...interface{}) {
+func (lc *LogAdapter) Emergency(args ...interface{}) {
 	lc.Log(Emergency, args...)
 }
 
 // Emergencyf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Emergencyf(format string, args ...interface{}) {
+func (lc *LogAdapter) Emergencyf(format string, args ...interface{}) {
 	lc.Log(Emergency, fmt.Sprintf(format, args...))
 }
 
 // Alert logs with an emergency level
-func (lc *LogContainer) Alert(args ...interface{}) {
+func (lc *LogAdapter) Alert(args ...interface{}) {
 	lc.Log(Alert, args...)
 }
 
 // Alertf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Alertf(format string, args ...interface{}) {
+func (lc *LogAdapter) Alertf(format string, args ...interface{}) {
 	lc.Log(Alert, fmt.Sprintf(format, args...))
 }
 
 // Critical logs with an emergency level
-func (lc *LogContainer) Critical(args ...interface{}) {
+func (lc *LogAdapter) Critical(args ...interface{}) {
 	lc.Log(Critical, args...)
 }
 
 // Criticalf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Criticalf(format string, args ...interface{}) {
+func (lc *LogAdapter) Criticalf(format string, args ...interface{}) {
 	lc.Log(Critical, fmt.Sprintf(format, args...))
 }
 
 // Error logs with an emergency level
-func (lc *LogContainer) Error(args ...interface{}) {
+func (lc *LogAdapter) Error(args ...interface{}) {
 	lc.Log(Error, args...)
 }
 
 // Errorf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Errorf(format string, args ...interface{}) {
+func (lc *LogAdapter) Errorf(format string, args ...interface{}) {
 	lc.Log(Error, fmt.Sprintf(format, args...))
 }
 
 // Warning logs with an emergency level
-func (lc *LogContainer) Warning(args ...interface{}) {
+func (lc *LogAdapter) Warning(args ...interface{}) {
 	lc.Log(Warning, args...)
 }
 
 // Warningf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Warningf(format string, args ...interface{}) {
+func (lc *LogAdapter) Warningf(format string, args ...interface{}) {
 	lc.Log(Warning, fmt.Sprintf(format, args...))
 }
 
 // Notice logs with an emergency level
-func (lc *LogContainer) Notice(args ...interface{}) {
+func (lc *LogAdapter) Notice(args ...interface{}) {
 	lc.Log(Notice, args...)
 }
 
 // Noticef logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Noticef(format string, args ...interface{}) {
+func (lc *LogAdapter) Noticef(format string, args ...interface{}) {
 	lc.Log(Notice, fmt.Sprintf(format, args...))
 }
 
 // Info logs with an emergency level
-func (lc *LogContainer) Info(args ...interface{}) {
+func (lc *LogAdapter) Info(args ...interface{}) {
 	lc.Log(Info, args...)
 }
 
 // Infof logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Infof(format string, args ...interface{}) {
+func (lc *LogAdapter) Infof(format string, args ...interface{}) {
 	lc.Log(Info, fmt.Sprintf(format, args...))
 }
 
 // Debug logs with an emergency level
-func (lc *LogContainer) Debug(args ...interface{}) {
+func (lc *LogAdapter) Debug(args ...interface{}) {
 	lc.Log(Debug, args...)
 }
 
 // Debugf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Debugf(format string, args ...interface{}) {
+func (lc *LogAdapter) Debugf(format string, args ...interface{}) {
 	lc.Log(Debug, fmt.Sprintf(format, args...))
 }
 
 // Log logs with an emergency level
-func (lc *LogContainer) Log(level Level, args ...interface{}) {
+func (lc *LogAdapter) Log(level Level, args ...interface{}) {
 	lc.internalLogFunction(level, args...)
 }
 
 // Logf logs with an emergency level.
 // Arguments are handled in the manner of fmt.Printf.
-func (lc *LogContainer) Logf(level Level, format string, args ...interface{}) {
+func (lc *LogAdapter) Logf(level Level, format string, args ...interface{}) {
 	lc.Log(level, fmt.Sprintf(format, args...))
 }
 
@@ -212,8 +210,9 @@ type LoggerConfig struct {
 	Prefix string
 }
 
-// ILogger factory
-// Returns ILogger set up based on provided configuration
+// ILogger factory.
+// Instantiates a new LogAdapter based on provided configuration and returns it as ILogger
+//
 // NB : For the moment it returns logger printing to terminal independent on configuration.
 func GetILogger(conf LoggerConfig) ILogger {
 	if conf == (LoggerConfig{}) {

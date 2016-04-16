@@ -5,7 +5,7 @@ import (
 )
 
 func GetStdTerminalLogger() ILogger {
-	return GetNewLogContainer(stdLogToTerminal)
+	return GetNewLogAdapter(stdLogToTerminal)
 }
 
 func stdLogToTerminal(level Level, args ...interface{}) {
