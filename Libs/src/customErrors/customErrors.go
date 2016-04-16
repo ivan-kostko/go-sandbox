@@ -8,6 +8,7 @@ import (
 
 //go:generate stringer -type=ErrorType
 
+// Represents enum of predefined error types
 type ErrorType int
 
 const (
