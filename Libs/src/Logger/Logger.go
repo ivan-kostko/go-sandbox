@@ -213,7 +213,9 @@ type LoggerConfig struct {
 // ILogger factory.
 // Instantiates a new LogAdapter based on provided configuration and returns it as ILogger
 //
-// NB : For the moment it returns logger printing to terminal independent on configuration.
+// NB : For the moment it returns only StdTerminalLogger independent on configuration.
+//
+// TODO(me): Refactor GetILogger, LoggerConfig to support some other logging libs.
 func GetILogger(conf LoggerConfig) ILogger {
 	if conf == (LoggerConfig{}) {
 		return GetStdTerminalLogger()
