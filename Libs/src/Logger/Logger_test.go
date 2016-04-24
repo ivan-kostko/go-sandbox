@@ -6,30 +6,87 @@ import (
 )
 
 func TestLevelStringer(t *testing.T) {
-	if None.String() != "None" {
-		t.Errorf("None.String() returned %v while expected None", None.String())
+
+	testCases := []struct {
+		Name     string
+		Actual   string
+		Expected string
+	}{
+		{
+			"Nane",
+			None.String(),
+			"None",
+		},
+		{
+			"Emergency",
+			Emergency.String(),
+			"Emergency",
+		},
+		{
+			"Critical",
+			Critical.String(),
+			"Critical",
+		},
+		{
+			"Error",
+			Error.String(),
+			"Error",
+		},
+		{
+			"Warning",
+			Warning.String(),
+			"Warning",
+		},
+		{
+			"Notice",
+			Notice.String(),
+			"Notice",
+		},
+		{
+			"Info",
+			Info.String(),
+			"Info",
+		},
+		{
+			"Debug",
+			Debug.String(),
+			"Debug",
+		},
 	}
-	if Emergency.String() != "Emergency" {
-		t.Errorf("Emergency.String() returned %v while expected Emergency", Emergency.String())
+
+	for _, testCase := range testCases {
+		name := testCase.Name
+		expected := testCase.Expected
+		actual := testCase.Actual
+		if actual != expected {
+			t.Errorf("Testing %v.String: returned %#v \n\t\t\twhile expected %#v", name, actual, expected)
+		}
 	}
-	if Critical.String() != "Critical" {
-		t.Errorf("Critical.String() returned %v while expected Critical", Critical.String())
-	}
-	if Error.String() != "Error" {
-		t.Errorf("Error.String() returned %v while expected Error", Error.String())
-	}
-	if Warning.String() != "Warning" {
-		t.Errorf("Warning.String() returned %v while expected Warning", Warning.String())
-	}
-	if Notice.String() != "Notice" {
-		t.Errorf("Notice.String() returned %v while expected Notice", Notice.String())
-	}
-	if Info.String() != "Info" {
-		t.Errorf("Info.String() returned %v while expected Info", Info.String())
-	}
-	if Debug.String() != "Debug" {
-		t.Errorf("Debug.String() returned %v while expected Debug", Debug.String())
-	}
+
+	//    if None.String() != "None" {
+	//		t.Errorf("None.String() returned %v while expected None", None.String())
+	//	}
+	//	if Emergency.String() != "Emergency" {
+	//		t.Errorf("Emergency.String() returned %v while expected Emergency", Emergency.String())
+	//	}
+	//	if Critical.String() != "Critical" {
+	//		t.Errorf("Critical.String() returned %v while expected Critical", Critical.String())
+	//	}
+	//	if Error.String() != "Error" {
+	//		t.Errorf("Error.String() returned %v while expected Error", Error.String())
+	//	}
+	//	if Warning.String() != "Warning" {
+	//		t.Errorf("Warning.String() returned %v while expected Warning", Warning.String())
+	//	}
+	//	if Notice.String() != "Notice" {
+	//		t.Errorf("Notice.String() returned %v while expected Notice", Notice.String())
+	//	}
+	//	if Info.String() != "Info" {
+	//		t.Errorf("Info.String() returned %v while expected Info", Info.String())
+	//	}
+	//	if Debug.String() != "Debug" {
+	//		t.Errorf("Debug.String() returned %v while expected Debug", Debug.String())
+	//	}
 }
 
 func TestLoggerContainerPrintLikeFunctions(t *testing.T) {
