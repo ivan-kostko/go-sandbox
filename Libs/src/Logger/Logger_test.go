@@ -28,6 +28,11 @@ func TestLevelStringer(t *testing.T) {
 			"Critical",
 		},
 		{
+			"Alert",
+			Alert.String(),
+			"Alert",
+		},
+		{
 			"Error",
 			Error.String(),
 			"Error",
@@ -63,167 +68,177 @@ func TestLevelStringer(t *testing.T) {
 		}
 	}
 
-	//    if None.String() != "None" {
-	//		t.Errorf("None.String() returned %v while expected None", None.String())
-	//	}
-	//	if Emergency.String() != "Emergency" {
-	//		t.Errorf("Emergency.String() returned %v while expected Emergency", Emergency.String())
-	//	}
-	//	if Critical.String() != "Critical" {
-	//		t.Errorf("Critical.String() returned %v while expected Critical", Critical.String())
-	//	}
-	//	if Error.String() != "Error" {
-	//		t.Errorf("Error.String() returned %v while expected Error", Error.String())
-	//	}
-	//	if Warning.String() != "Warning" {
-	//		t.Errorf("Warning.String() returned %v while expected Warning", Warning.String())
-	//	}
-	//	if Notice.String() != "Notice" {
-	//		t.Errorf("Notice.String() returned %v while expected Notice", Notice.String())
-	//	}
-	//	if Info.String() != "Info" {
-	//		t.Errorf("Info.String() returned %v while expected Info", Info.String())
-	//	}
-	//	if Debug.String() != "Debug" {
-	//		t.Errorf("Debug.String() returned %v while expected Debug", Debug.String())
-	//	}
 }
 
 func TestLoggerContainerPrintLikeFunctions(t *testing.T) {
+	// Just Print like functions
+
 	originalArgs := []interface{}{"Arg1", "Arg2", "Arg3", 4}
 	expectedArgs := []interface{}{"Arg1", "Arg2", "Arg3", 4}
 	var actualArgs []interface{}
 
-	var expectedLevel Level
 	var actualLevel Level
 
+	reInitActualLevel := func() { actualLevel = 0 }
 	ilf := func(level Level, args ...interface{}) { actualLevel = level; actualArgs = args }
 
 	l := GetNewLogAdapter(ilf)
 
-	// Just Print like functions
+	reInitActualLevel()
 
-	expectedLevel = None
-	l.Log(None, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Log passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
+	testCases := []struct {
+		Name          string
+		Func          func()
+		ExpectedLevel Level
+	}{
+		{
+			"Log",
+			func() { l.Log(None, originalArgs...) },
+			None,
+		},
+		{
+			"Emergency",
+			func() { l.Emergency(originalArgs...) },
+			Emergency,
+		},
+		{
+			"Alert",
+			func() { l.Alert(originalArgs...) },
+			Alert,
+		},
+		{
+			"Critical",
+			func() { l.Critical(originalArgs...) },
+			Critical,
+		},
+		{
+			"Error",
+			func() { l.Error(originalArgs...) },
+			Error,
+		},
+		{
+			"Warning",
+			func() { l.Warning(originalArgs...) },
+			Warning,
+		},
+		{
+			"Notice",
+			func() { l.Notice(originalArgs...) },
+			Notice,
+		},
+		{
+			"Info",
+			func() { l.Info(originalArgs...) },
+			Info,
+		},
+		{
+			"Debug",
+			func() { l.Debug(originalArgs...) },
+			Debug,
+		},
 	}
 
-	expectedLevel = Emergency
-	l.Emergency(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Emergency passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
+	for _, testCase := range testCases {
+		// Before any test - reinitialize actual to avoid influnce of previouse tests
+		reInitActualLevel()
+
+		name := testCase.Name
+		fn := testCase.Func
+		expectedLevel := testCase.ExpectedLevel
+
+		// invoce test function
+		fn()
+
+		if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
+			t.Errorf("l.%s passed %s %v when expected %s %v", name, actualLevel, actualArgs, expectedLevel, expectedArgs)
+		}
 	}
 
-	expectedLevel = Alert
-	l.Alert(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Emergency passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Critical
-	l.Critical(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Critical passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Error
-	l.Error(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Error passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Warning
-	l.Warning(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Warning passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Notice
-	l.Notice(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Notice passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Info
-	l.Info(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Info passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Debug
-	l.Debug(originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Debug passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
 }
 
 func TestLoggerContainerPrintFLikeFunctions(t *testing.T) {
+
+	// Just PrintF like functions
+
 	originalArgs := []interface{}{"Arg1", "Arg2", "Arg3", 4}
 	formatString := " %s %s %s %v "
 	expectedArgs := []interface{}{" Arg1 Arg2 Arg3 4 "}
 	var actualArgs []interface{}
 
-	var expectedLevel Level
 	var actualLevel Level
 
+	reInitActualLevel := func() { actualLevel = 0 }
 	ilf := func(level Level, args ...interface{}) { actualLevel = level; actualArgs = args }
 
 	l := GetNewLogAdapter(ilf)
 
-	// Just PrintF like functions
+	reInitActualLevel()
 
-	expectedLevel = None
-	l.Logf(None, formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Logf passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
+	testCases := []struct {
+		Name          string
+		Func          func()
+		ExpectedLevel Level
+	}{
+		{
+			"Log",
+			func() { l.Logf(None, formatString, originalArgs...) },
+			None,
+		},
+		{
+			"Emergency",
+			func() { l.Emergencyf(formatString, originalArgs...) },
+			Emergency,
+		},
+		{
+			"Alert",
+			func() { l.Alertf(formatString, originalArgs...) },
+			Alert,
+		},
+		{
+			"Critical",
+			func() { l.Criticalf(formatString, originalArgs...) },
+			Critical,
+		},
+		{
+			"Error",
+			func() { l.Errorf(formatString, originalArgs...) },
+			Error,
+		},
+		{
+			"Warning",
+			func() { l.Warningf(formatString, originalArgs...) },
+			Warning,
+		},
+		{
+			"Notice",
+			func() { l.Noticef(formatString, originalArgs...) },
+			Notice,
+		},
+		{
+			"Info",
+			func() { l.Infof(formatString, originalArgs...) },
+			Info,
+		},
+		{
+			"Debug",
+			func() { l.Debugf(formatString, originalArgs...) },
+			Debug,
+		},
 	}
 
-	expectedLevel = Emergency
-	l.Emergencyf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Emergency passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
+	for _, testCase := range testCases {
+		// Before any test - reinitialize actual to avoid influnce of previouse tests
+		reInitActualLevel()
 
-	expectedLevel = Alert
-	l.Alertf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Emergency passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
+		name := testCase.Name
+		fn := testCase.Func
+		expectedLevel := testCase.ExpectedLevel
 
-	expectedLevel = Critical
-	l.Criticalf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Critical passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
+		// invoce test function
+		fn()
 
-	expectedLevel = Error
-	l.Errorf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Error passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Warning
-	l.Warningf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Warning passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Notice
-	l.Noticef(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Notice passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Info
-	l.Infof(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Info passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
-	}
-
-	expectedLevel = Debug
-	l.Debugf(formatString, originalArgs...)
-	if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
-		t.Errorf("l.Debug passed %s %v when expected %s %v", actualLevel, actualArgs, expectedLevel, expectedArgs)
+		if actualLevel != expectedLevel || !reflect.DeepEqual(actualArgs, expectedArgs) {
+			t.Errorf("l.%s passed %s %v when expected %s %v", name, actualLevel, actualArgs, expectedLevel, expectedArgs)
+		}
 	}
 }
