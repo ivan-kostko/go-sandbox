@@ -12,10 +12,10 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package Parcer
+package Parser
 
 import (
 	. "github.com/ivan-kostko/GoLibs/CustomErrors"
 )
 
-type Deserializer func(data []byte, inRef interface{}) *Error
+type Serializer func(in interface{}) ([]byte, *Error)

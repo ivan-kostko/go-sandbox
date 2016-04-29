@@ -12,27 +12,34 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-package Parcer
+package Parser
+
+import (
+	"fmt"
+
+	. "github.com/ivan-kostko/GoLibs/CustomErrors"
+)
 
 //go:generate stringer -type=SupportedCodec
+
+const SUPPORTEDCODECIOTAOFFSET = 2
 
 // Represents ENUM of supported codecs
 type SupportedCodec int
 
 const (
-	DefaultXML SupportedCodec = iota
+	DefaultXML SupportedCodec = iota + SUPPORTEDCODECIOTAOFFSET
 	DefaultJSON
 	DefaultYAML
 )
 
-// Represents the list of registered serializers
-var registeredSerializers map[SupportedCodec]Serializer
+// Represents factory for SupportedCodec
+func GetSupportedCodecByString(str string) (SupportedCodec, *Error) {
+	for i := 0; i < len(_SupportedCodec_index)-1; i++ {
+		if str == _SupportedCodec_name[_SupportedCodec_index[i]:_SupportedCodec_index[i+1]] {
 
-// Represents the list of registered deserializers
-var registeredDeserializers map[SupportedCodec]Deserializer
-
-// Defines functionality of parser as combination of two functions: Serialize + Deserialize
-type Parser struct {
-	Serializer
-	Deserializer
+			return SupportedCodec(i + SUPPORTEDCODECIOTAOFFSET), nil
+		}
+	}
+	return 0, NewError(Nonsupported, fmt.Sprintf("Parcer: The codec '%s' is not supported", str))
 }

@@ -12,9 +12,16 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
-/*
-Description
-    The package provides interface to internal factory of predefined parser wrappers.
-    The main purpose of the package is to have standardized parsers for common use.
-*/
-package Parcer
+package Parser
+
+// Represents the list of registered serializers
+var registeredSerializers map[SupportedCodec]Serializer
+
+// Represents the list of registered deserializers
+var registeredDeserializers map[SupportedCodec]Deserializer
+
+// Defines functionality of parser as combination of two functions: Serialize + Deserialize
+type Parser struct {
+	Serializer
+	Deserializer
+}
