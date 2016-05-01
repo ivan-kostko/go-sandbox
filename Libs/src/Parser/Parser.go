@@ -14,14 +14,59 @@
 
 package Parser
 
-// Represents the list of registered serializers
-var registeredSerializers map[SupportedCodec]Serializer
+import (
+	. "github.com/ivan-kostko/GoLibs/CustomErrors"
+	tsMap "github.com/ivan-kostko/GoLibs/ThreadSafe/Map"
+)
 
-// Represents the list of registered deserializers
-var registeredDeserializers map[SupportedCodec]Deserializer
+// Predefined list of error messages
+const (
+	ERR_WONTGETPARSER     = "Parser: Won't get parser for provided format, cause it is not registered"
+	ERR_WRONGREGTYPE      = "Parser: Won't get parser for provided format, cause it is of wrong type"
+	ERR_ALREADYREGISTERED = "Parser: There is already registered parser for provided format. Wont register twice"
+)
+
+const INIT_PARSERSCAPACITY = 10
+
+// Represents the list of registered parsers
+var parsers = tsMap.New(INIT_PARSERSCAPACITY)
 
 // Defines functionality of parser as combination of two functions: Serialize + Deserialize
 type Parser struct {
 	Serializer
 	Deserializer
+}
+
+// Registers parser for a format
+// It panics if there is already registered Parser with same format
+func Register(f Format, p *Parser) *Error {
+	if _, ok := parsers.Get(f.String()); ok {
+		return NewError(InvalidOperation, ERR_ALREADYREGISTERED)
+	}
+	parsers.Set(f.String(), p)
+	return nil
+}
+
+// Gets parser by format name as string
+// In case of error returns empty parser and InvalidOperation error with one of predefined messages:
+// ERR_WONTGETPARSER
+// ERR_WRONGREGTYPE
+func getParserByFormatName(f string) (parser *Parser, err *Error) {
+	p, ok := parsers.Get(f)
+	if !ok {
+		return &Parser{}, NewError(InvalidOperation, ERR_WONTGETPARSER)
+	}
+	parser, ok = p.(*Parser)
+	if !ok {
+		return &Parser{}, NewError(InvalidOperation, ERR_WRONGREGTYPE)
+	}
+	return parser, nil
+}
+
+// Gets parser by format
+// In case of error returns empty parser and InvalidOperation error with one of predefined messages:
+// ERR_WONTGETPARSER
+// ERR_WRONGREGTYPE
+func GetParserByFormat(f Format) (parser *Parser, err *Error) {
+	return getParserByFormatName(f.String())
 }

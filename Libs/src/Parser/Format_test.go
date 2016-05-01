@@ -20,10 +20,10 @@ import (
 	. "github.com/ivan-kostko/GoLibs/CustomErrors"
 )
 
-func TestSupportedCodecToString(t *testing.T) {
+func TestFormatToString(t *testing.T) {
 
 	testCases := []struct {
-		Codec    SupportedCodec
+		Codec    Format
 		Expected string
 	}{
 		{
@@ -50,11 +50,11 @@ func TestSupportedCodecToString(t *testing.T) {
 	}
 }
 
-func TestGetSupportedCodecByString(t *testing.T) {
+func TestGetFormatByString(t *testing.T) {
 
 	testCases := []struct {
 		Codec    string
-		Expected SupportedCodec
+		Expected Format
 	}{
 		{
 			"DefaultXML",
@@ -73,23 +73,23 @@ func TestGetSupportedCodecByString(t *testing.T) {
 		codec := testCase.Codec
 		expected := testCase.Expected
 
-		actual, err := GetSupportedCodecByString(codec)
+		actual, err := GetFormatByString(codec)
 		if actual != expected || err != nil {
-			t.Errorf("GetSupportedCodecByString(%#v) returned ( %v, %v ) while expected ( %v, %v )", codec, actual, err, expected, nil)
+			t.Errorf("GetFormatByString(%#v) returned ( %v, %v ) while expected ( %v, %v )", codec, actual, err, expected, nil)
 		}
 	}
 
 	// Test non existent codec
 	codec := "Nonexistent Codec"
-	expectedCodec := SupportedCodec(0)
+	expectedCodec := Format(0)
 	expectedErrorType := Nonsupported
 	expectedErrorMSg := "Parcer: The codec 'Nonexistent Codec' is not supported"
 
-	actual, err := GetSupportedCodecByString(codec)
+	actual, err := GetFormatByString(codec)
 	if actual != expectedCodec ||
 		err.Type != expectedErrorType ||
 		err.Message != expectedErrorMSg {
-		t.Errorf("GetSupportedCodecByString(%#v) returned ( %v, %v ) while expected ( %v, %v )", codec, actual, err, expectedCodec, NewError(expectedErrorType, expectedErrorMSg))
+		t.Errorf("GetFormatByString(%#v) returned ( %v, %v ) while expected ( %v, %v )", codec, actual, err, expectedCodec, NewError(expectedErrorType, expectedErrorMSg))
 
 	}
 }

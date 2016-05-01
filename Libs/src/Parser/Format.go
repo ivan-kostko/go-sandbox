@@ -14,31 +14,29 @@
 
 package Parser
 
-import (
-	"fmt"
+import "fmt"
 
-	. "github.com/ivan-kostko/GoLibs/CustomErrors"
-)
+import . "github.com/ivan-kostko/GoLibs/CustomErrors"
 
-//go:generate stringer -type=SupportedCodec
+//go:generate stringer -type=Format
 
-const SUPPORTEDCODECIOTAOFFSET = 2
+const FORMATIOTAOFFSET = 2
 
 // Represents ENUM of supported codecs
-type SupportedCodec int
+type Format int
 
 const (
-	DefaultXML SupportedCodec = iota + SUPPORTEDCODECIOTAOFFSET
+	DefaultXML Format = iota + FORMATIOTAOFFSET
 	DefaultJSON
 	DefaultYAML
 )
 
-// Represents factory for SupportedCodec
-func GetSupportedCodecByString(str string) (SupportedCodec, *Error) {
-	for i := 0; i < len(_SupportedCodec_index)-1; i++ {
-		if str == _SupportedCodec_name[_SupportedCodec_index[i]:_SupportedCodec_index[i+1]] {
+// Represents factory for Format
+func GetFormatByString(str string) (Format, *Error) {
+	for i := 0; i < len(_Format_index)-1; i++ {
+		if str == _Format_name[_Format_index[i]:_Format_index[i+1]] {
 
-			return SupportedCodec(i + SUPPORTEDCODECIOTAOFFSET), nil
+			return Format(i + FORMATIOTAOFFSET), nil
 		}
 	}
 	return 0, NewError(Nonsupported, fmt.Sprintf("Parcer: The codec '%s' is not supported", str))
