@@ -40,14 +40,14 @@ func TestGetParser(t *testing.T) {
 			"DefaultJSON",
 			interface{}(&fakeParser{}),
 			DefaultXML,
-			&Parser{},
+			nil,
 			NewError(InvalidOperation, ERR_WONTGETPARSER),
 		},
 		{
 			"DefaultXML",
 			interface{}(&fakeParser{}),
 			DefaultXML,
-			&Parser{},
+			nil,
 			NewError(InvalidOperation, ERR_WRONGREGTYPE),
 		},
 		{
@@ -107,6 +107,13 @@ func TestRegisterParser(t *testing.T) {
 			defaultYAMLParser,
 			nil,
 		},
+		{
+			// Rgistering defaultJSONParser for already registered format DefaultYAML should return error. However, parser registerd for DefaultYAML still persists from previous registration.
+			DefaultYAML,
+			defaultJSONParser,
+			defaultYAMLParser,
+			NewError(InvalidOperation, ERR_ALREADYREGISTERED),
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -114,8 +121,8 @@ func TestRegisterParser(t *testing.T) {
 		parser, _ := parsers.Get(testCase.RegisterFormat.String())
 		actualParser := parser.(*Parser)
 		if !(actualParser == testCase.ExpectedParser &&
-			actualError == testCase.ExpectedError) {
-			t.Errorf("Register( %v, %v ) returned Error %v and assigned Parser %v, while expected Error %v and assigned Parser %v ", testCase.RegisterFormat, testCase.RegisterParser, actualError, actualParser, testCase.ExpectedError, testCase.ExpectedParser)
+			reflect.DeepEqual(actualError, testCase.ExpectedError)) {
+			t.Errorf("Register( %v, %v ) returned Error %v and assigned Parser %#v, while expected Error %v and assigned Parser %#v ", testCase.RegisterFormat, testCase.RegisterParser, actualError, actualParser, testCase.ExpectedError, testCase.ExpectedParser)
 		}
 
 	}

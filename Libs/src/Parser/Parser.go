@@ -38,7 +38,8 @@ type Parser struct {
 }
 
 // Registers parser for a format
-// It panics if there is already registered Parser with same format
+// It returns ERR_ALREADYREGISTERED if there is already registered Parser with same format. Initial registration stays w/o changes.
+// So, if register SomeFormat + SomeParser, and now try to register SomeFormat+NewParser - current registration returns error, keeping initial registration (SomeFormat + SomeParser) w/o changes.
 func Register(f Format, p *Parser) *Error {
 	if _, ok := parsers.Get(f.String()); ok {
 		return NewError(InvalidOperation, ERR_ALREADYREGISTERED)
@@ -48,17 +49,17 @@ func Register(f Format, p *Parser) *Error {
 }
 
 // Gets parser by format name as string
-// In case of error returns empty parser and InvalidOperation error with one of predefined messages:
+// In case of error returns nil and InvalidOperation error with one of predefined messages:
 // ERR_WONTGETPARSER
 // ERR_WRONGREGTYPE
 func getParserByFormatName(f string) (parser *Parser, err *Error) {
 	p, ok := parsers.Get(f)
 	if !ok {
-		return &Parser{}, NewError(InvalidOperation, ERR_WONTGETPARSER)
+		return nil, NewError(InvalidOperation, ERR_WONTGETPARSER)
 	}
 	parser, ok = p.(*Parser)
 	if !ok {
-		return &Parser{}, NewError(InvalidOperation, ERR_WRONGREGTYPE)
+		return nil, NewError(InvalidOperation, ERR_WRONGREGTYPE)
 	}
 	return parser, nil
 }
