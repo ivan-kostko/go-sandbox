@@ -13,7 +13,7 @@
 //   limitations under the License.
 
 
-package main
+package CodeGenerator
 
 import (
 	"errors"
@@ -63,7 +63,7 @@ func main() {
 
 	generator := NewGenerator(*templateFile)
 
-	m := metadata(*typeName, *typePointer, pkgDir)
+	m := getNewMetadata(*typeName, *typePointer, pkgDir)
 	if err := generator.Generate(writer, m); err != nil {
 		panic(err)
 	}
@@ -93,15 +93,4 @@ func packageDir(packageName string) (string, error) {
 	return workDir, nil
 }
 
-func metadata(typeName string, pointerType bool, packageDir string) (m Metadata) {
-	m.TypeName = typeName
-	m.PackageName = filepath.Base(packageDir)
 
-	if pointerType {
-		m.FullTypeName = m.TypeName
-	} else {
-		m.FullTypeName = fmt.Sprintf("*%s", m.TypeName)
-	}
-
-	return m
-}

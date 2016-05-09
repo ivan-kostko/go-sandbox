@@ -18,4 +18,4 @@
 /*
 CodeGenerator document
 */
-package main
+package CodeGenerator
