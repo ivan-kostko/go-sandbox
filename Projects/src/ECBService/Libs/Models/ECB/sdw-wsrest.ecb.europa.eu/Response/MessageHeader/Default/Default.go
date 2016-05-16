@@ -16,7 +16,15 @@
 // Default project Default.go
 package Default
 
+import (
+    ecb "ECBService/Libs/Models/ECB"
+)
+
 var registerAs = "sdw-wsrest.ecb.europa.eu/Response/MessageHeader/Default"
+
+func init() {
+    ecb.RegisterFactory(registerAs, GetNewMessageHeader)
+}
 
 type MessageHeader struct{
     //XMLName  xml.Name  `xml:'message:GenericData'`

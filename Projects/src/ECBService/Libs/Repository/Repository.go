@@ -13,13 +13,19 @@
 //   limitations under the License.
 
 
-// Models project Models.go
-package Models
+// Repository project Repository.go
+package Repository
 
-import (
-    	tsMap "github.com/ivan-kostko/GoLibs/ThreadSafe/Map"
+import(
+    ds "ECBService/Libs/Repository/DataSource"
+    . "github.com/ivan-kostko/GoLibs/CustomErrors"
 )
 
-type ModelFactory func() interface{}
+type Repository struct {
+    dataSource        ds.DataSource
 
+}
 
+func (this *Repository) GetAll() ([]interface{}, *Error){
+    return nil, nil
+}
