@@ -21,24 +21,19 @@ import(
     //business "ECBService/Libs/Models/Business"
 )
 
+
+// Represents the ECB Currency Exchange rate repository implementation
 type ECBCurrencyExchangeRepo struct {
     repo *repo.Repository
 }
 
+
+// Represents configuration for ECB Currency Exchange rate repository implementation
 type ECBCurrencyExchangeRepoConfig struct{
-    DSConf                           ECBDataSourceConfiguration
+    DSConf       ECBDataSourceConfiguration
 }
 
-//var repoConfig = ECBCurrencyExchangeRepoConfig{
-//    DSConf: ECBDataSourceConfiguration{
-//        {
-//            MainUrl: string("https://a-sdw-wsrest.ecb.int/service/data/EXR"),
-//            Headers: map[string][]string{"Accept":{"application/vnd.sdmx.data+json;version=1.0.0-wd"}},
-//            CheckResponse: nil,
-//        },
-//    },
-//}
-
+// ECBCurrencyExchangeRepo factory
 func GetNewECBCurrencyExchangeRepo(repoConfig ECBCurrencyExchangeRepoConfig) *ECBCurrencyExchangeRepo {
     ecbDS , _ := getECBDataSource(repoConfig.DSConf)
 
