@@ -18,11 +18,22 @@ package ECBRepository
 
 import (
     "testing"
+
 )
 
+var dsConf = ECBDataSourceConfiguration{
+            "https://a-sdw-wsrest.ecb.int/service/data/EXR",
+            map[string][]string{"Accept":{"application/vnd.sdmx.data+json;version=1.0.0-wd"}},
+            nil,
+
+}
+
 func TestECBDataSource(t *testing.T){
-    ds := getECBDataSource()
-    result, err := ds.ExecuteInstruction("https://sdw-wsrest.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2016-05-05&endPeriod=2016-05-16")
+    ds, err := getECBDataSource(dsConf)
+    if err != nil {
+        t.Fatalf("getECBDataSource returned error as %v ",err)
+    }
+    result, err := ds.ExecuteInstruction("D.USD.EUR.SP00.A?startPeriod=2016-05-05&endPeriod=2016-05-16")
     if err != nil {
         t.Errorf("ds.ExecuteInstruction returned error as %#v ",err)
     }

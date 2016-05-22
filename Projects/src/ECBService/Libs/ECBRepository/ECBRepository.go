@@ -17,15 +17,32 @@
 package ECBRepository
 
 import(
-    ds "ECBService/Libs/Repository/DataSource"
-    business "ECBService/Libs/Models/Business"
+    repo "github.com/ivan-kostko/GoLibs/Repository"
+    //business "ECBService/Libs/Models/Business"
 )
 
-type Repository struct {
-    dataSource        ds.DataSource
-
+type ECBCurrencyExchangeRepo struct {
+    repo *repo.Repository
 }
 
-func (this *Repository) GetAll() []business.CurrencyExchangeRate {
-
+type ECBCurrencyExchangeRepoConfig struct{
+    DSConf                           ECBDataSourceConfiguration
 }
+
+//var repoConfig = ECBCurrencyExchangeRepoConfig{
+//    DSConf: ECBDataSourceConfiguration{
+//        {
+//            MainUrl: string("https://a-sdw-wsrest.ecb.int/service/data/EXR"),
+//            Headers: map[string][]string{"Accept":{"application/vnd.sdmx.data+json;version=1.0.0-wd"}},
+//            CheckResponse: nil,
+//        },
+//    },
+//}
+
+func GetNewECBCurrencyExchangeRepo(repoConfig ECBCurrencyExchangeRepoConfig) *ECBCurrencyExchangeRepo {
+    ecbDS , _ := getECBDataSource(repoConfig.DSConf)
+
+    return &ECBCurrencyExchangeRepo{repo: repo.GetNewRepository(ecbDS,nil,nil,nil)}
+}
+
+
