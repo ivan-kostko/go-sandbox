@@ -13,7 +13,6 @@
 //   limitations under the License.
 
 
-// ECBRepository project ECBRepository.go
 package ECBRepository
 
 import(

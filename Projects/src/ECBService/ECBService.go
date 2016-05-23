@@ -14,4 +14,6 @@
 
 
 // ECBService project ECBService.go
-package ECBService
+package main
+
+

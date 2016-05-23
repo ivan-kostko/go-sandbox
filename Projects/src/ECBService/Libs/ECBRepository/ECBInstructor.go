@@ -19,12 +19,63 @@ import(
     ds "github.com/ivan-kostko/GoLibs/Repository/DataSource"
     repo "github.com/ivan-kostko/GoLibs/Repository"
     . "github.com/ivan-kostko/GoLibs/CustomErrors"
+
+    "strings"
+)
+
+const(
+    ERR_MORETHANONEFILTERINGCONDITION  = "ECBInstructor: Currenly, disjuction functionality is not supported even by "
+    ERR_NONSUPORTEDOPERATOR            = "ECBInstructor: Currenly, the operator is not supported"
+)
+
+const (
+    FREQ            =  "FREQ"
+    CURRENCY        =  "CURRENCY"
+    CURRENCY_DENOM  =  "CURRENCY_DENOM"
+    EXR_TYPE        =  "EXR_TYPE"
+    EXR_SUFFIX      =  "EXR_SUFFIX"
+
+
 )
 
 type ECBInstructor struct{
+    keyPathParamOR            string
+    keyPathParamDelimeter     string
 
 }
 
-func (this ECBInstructor) GenerateInstruction(fc ...repo.FilteringCondition) (ds.Instruction, *Error){
+
+
+// Generates Instruction for ECB data source
+// Returns Instruction(""),
+func (this ECBInstructor) GenerateInstruction(fcs ...repo.FilteringCondition) (ds.Instruction, *Error){
+    if len(fc) > 1 {
+        return ds.Instruction(""), NewError(Nonsupported, ERR_MORETHANONEFILTERINGCONDITION)
+    }
+    fc := fcs[0]
+
+    frquencies := ""
+    for frquncy := range fc[FREQ]
     return ds.Instruction(""), nil
 }
+
+func (this ECBInstructor) generateKeyPathParameter(fc repo.FilteringCondition) (string, *Error){
+    frequencyKey := this.generateFrequency(fc[FREQ])
+
+}
+
+
+func (this ECBInstructor) generateFrequency(freqPredicates []repo.Predicate) (string, *Error){
+    ret := ""
+    for i, frequncy := range freqPredictes {
+        if frequncy.Operator == repo.IN {
+            ret = strings.Join({ret, frequncy.Values}, this.keyPathParamOR)
+
+        }else {
+            return ds.Instruction(""), NewError(Nonsupported, ERR_NONSUPORTEDOPERATOR)
+        }
+    }
+    return ret, nil
+}
+
+
