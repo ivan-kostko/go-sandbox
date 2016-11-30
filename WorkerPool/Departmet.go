@@ -7,116 +7,86 @@ import (
 
 const (
 	ERR_DEPARTMENTSHUTDOWN = "The department is shutting down and wont take new assignments"
-)
-
-var (
-	sleepBetweenAttempts = time.Duration(1)
+	ERR_TIMEDOUTREQUSTSLOT = "The request for a free execution slot has been timed out"
 )
 
 // Represents simple workers pool operating on Projects and WorkITems
 type Department interface {
 
 	// Synchronously requests worker slot and end exectes/does WorkItem in parallel routine as soon as slot is obtained
-	Do(wi WorkItem) error
-
-	// Returns true if there are taken slot
-	IsBusy() bool
-
-	// Returns true if no free slot available
-	IsCompletelyBusy() bool
+	// If no slot aquired upon timeOut exceeds - returns ERR_TIMEDOUTREQUSTSLOT
+	Do(wi WorkItem, timeOut time.Duration) error
 
 	// Closes the department
 	Close()
-
-	// Assigns a new Project to Depatment with deadline. prjDeadLine = 0 means no deadline for the project.
-	// AssignNewProject(prj Project, prjDeadLine time.Duration, result <-chan (error)) error
-
-	// Increeses number of workers for n
-	// EmployWorkers(n int) error
-
-	// Decreases number of workers for n
-	// FireWorkers(n int) error
 }
 
 // Private custom  implementation of department
 type depatment struct {
-	numberOfWorkers    int
-	isShuttingDown     bool
-	workersExecutePool chan struct{}
-	workersRequestPool chan struct{}
+	isShuttingDown bool
+	workersPool    chan struct{}
 }
 
 // A new Deapertment Factory
 func NewDepartment(initWorkerNumber int) Department {
-	// instantiate request pool
-	workersRequestPool := make(chan struct{}, initWorkerNumber)
+	// instantiate  pool
+	workersPool := make(chan struct{}, initWorkerNumber)
 
-	// fill up request pool
+	// fill up pool
 	// for each initially empty slot we shoul put one value
 	for i := 0; i < initWorkerNumber; i++ {
-		workersRequestPool <- struct{}{}
+		workersPool <- struct{}{}
 	}
 
 	return &depatment{
-		numberOfWorkers:    initWorkerNumber,
-		workersExecutePool: make(chan struct{}, initWorkerNumber),
-		workersRequestPool: workersRequestPool,
+		isShuttingDown: false,
+		workersPool:    workersPool,
 	}
 
 }
 
 // Implements Department.Do(wi WorkItem) method
-func (this *depatment) Do(wi WorkItem) error {
-	reqC := this.requestSlot()
-	_, more := <-reqC
+func (this *depatment) Do(wi WorkItem, timeOut time.Duration) error {
 
-	if this.isShuttingDown || !more {
+	if this.isShuttingDown {
 		return errors.New(ERR_DEPARTMENTSHUTDOWN)
 	}
 
-	defer this.releaseSlot()
+	t := time.NewTimer(timeOut)
 
-	this.workersExecutePool <- struct{}{}
+	select {
+	case _ = <-this.workersPool:
+		if !t.Stop() {
+			<-t.C
+		}
+	case _ = <-t.C:
+		return errors.New(ERR_TIMEDOUTREQUSTSLOT)
+	}
+
+	if this.isShuttingDown {
+		return errors.New(ERR_DEPARTMENTSHUTDOWN)
+	}
 
 	go func() {
-		defer func() { <-this.workersExecutePool }()
+		defer this.releaseSlot()
 		wi()
 	}()
 
 	return nil
 }
 
-func (this *depatment) IsBusy() bool {
-	return len(this.workersExecutePool) > 0 || len(this.workersRequestPool) < this.numberOfWorkers
-}
-
-func (this *depatment) IsCompletelyBusy() bool {
-	return len(this.workersRequestPool) == 0 || len(this.workersExecutePool) == this.numberOfWorkers
-}
-
 func (this *depatment) Close() {
 	this.isShuttingDown = true
 
 	// wait while all left assignments are done
-	for len(this.workersExecutePool) > 0 || len(this.workersRequestPool) < this.numberOfWorkers {
-
+	for i := 0; i < cap(this.workersPool); i++ {
+		<-this.workersPool
 	}
 
-	close(this.workersRequestPool)
+	close(this.workersPool)
 
-	if this.isShuttingDown {
-		time.Sleep(2 * sleepBetweenAttempts)
-	}
-	close(this.workersExecutePool)
-
-}
-
-func (this *depatment) requestSlot() <-chan struct{} {
-	return this.workersRequestPool
 }
 
 func (this *depatment) releaseSlot() {
-	if !this.isShuttingDown {
-		this.workersRequestPool <- struct{}{}
-	}
+	this.workersPool <- struct{}{}
 }

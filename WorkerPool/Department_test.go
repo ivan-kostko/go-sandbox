@@ -41,12 +41,13 @@ func Test_NewDepartment(t *testing.T) {
 				t.Skipf("\r\n For TestAlias: '%s' the NewDepartment(%v)  returned unknown implementation of Department inteface\r\n", initWorkerNumber, testAlias)
 			}
 
-			actualWorkerNumber := d.numberOfWorkers
-			actualChanCapacity := cap(d.workersExecutePool)
+			actualWorkerNumber := len(d.workersPool)
 
 			if actualWorkerNumber != expectedWorkerNumber {
 				t.Errorf("\r\n For TestAlias: '%s' the NewDepartment(%v)  returned department{} \r\n with numberOfWorkers = %v \r\n while expected %v \r\n", testAlias, initWorkerNumber, actualWorkerNumber, expectedWorkerNumber)
 			}
+
+			actualChanCapacity := cap(d.workersPool)
 
 			if actualChanCapacity != expectedChanCapacity {
 				t.Errorf("\r\n For TestAlias: '%s' the NewDepartment(%v)  returned department{} \r\n with workersPool cap = %v \r\n while expected %v \r\n", testAlias, initWorkerNumber, actualChanCapacity, expectedChanCapacity)
@@ -55,84 +56,6 @@ func Test_NewDepartment(t *testing.T) {
 		}
 		t.Run(testAlias, fn)
 
-	}
-}
-
-func Test_DepartmentCompletelyBusy(t *testing.T) {
-
-	testCases := []struct {
-		TestAlias                string
-		InitWorkerNumber         int
-		StartWorkerNumber        int
-		ExpectedIsCompletelyBusy bool
-	}{
-		{
-			TestAlias:                "0 jobs for 0 workers",
-			InitWorkerNumber:         0,
-			StartWorkerNumber:        0,
-			ExpectedIsCompletelyBusy: true,
-		},
-		{
-			TestAlias:                "0 jobs for 1 workers",
-			InitWorkerNumber:         1,
-			StartWorkerNumber:        0,
-			ExpectedIsCompletelyBusy: false,
-		},
-		{
-			TestAlias:                "9 jobs for 10 workers",
-			InitWorkerNumber:         10,
-			StartWorkerNumber:        9,
-			ExpectedIsCompletelyBusy: false,
-		},
-		{
-			TestAlias:                "10 jobs for 10 workers",
-			InitWorkerNumber:         10,
-			StartWorkerNumber:        10,
-			ExpectedIsCompletelyBusy: true,
-		},
-		{
-			TestAlias:                "11 jobs for 10 workers",
-			InitWorkerNumber:         10,
-			StartWorkerNumber:        11,
-			ExpectedIsCompletelyBusy: true,
-		},
-		{
-			TestAlias:                "20 jobs for 10 workers",
-			InitWorkerNumber:         10,
-			StartWorkerNumber:        20,
-			ExpectedIsCompletelyBusy: true,
-		},
-	}
-
-	for _, testCase := range testCases {
-		testAlias := testCase.TestAlias
-		initWorkerNumber := testCase.InitWorkerNumber
-		startWorkerNumber := testCase.StartWorkerNumber
-		expectedIsCompletelyBusy := testCase.ExpectedIsCompletelyBusy
-
-		fn := func(t *testing.T) {
-
-			block := make(chan struct{})
-
-			dep := NewDepartment(initWorkerNumber)
-
-			for i := 0; i < startWorkerNumber; i++ {
-				reportStart := make(chan struct{})
-				go func() { reportStart <- struct{}{}; dep.Do(func() { <-block }) }()
-				<-reportStart
-				close(reportStart)
-			}
-
-			actualIsCompletelyBusy := dep.IsCompletelyBusy()
-
-			// cancell workers
-			close(block)
-
-			if actualIsCompletelyBusy != expectedIsCompletelyBusy {
-				t.Errorf("For TestAlias '%s' Department.IsCompletelyBusy()  \r\n returned %v \r\n while expected %v \r\n", testAlias, actualIsCompletelyBusy, expectedIsCompletelyBusy)
-			}
-		}
-		t.Run(testAlias, fn)
 	}
 }
 
@@ -202,7 +125,7 @@ func Test_DepartmentDoWorkersLimit(t *testing.T) {
 
 			for i := 0; i < startWorkerNumber; i++ {
 				reportStart := make(chan struct{})
-				go func() { reportStart <- struct{}{}; dep.Do(func() { started <- struct{}{}; <-block }) }()
+				go func() { reportStart <- struct{}{}; dep.Do(func() { started <- struct{}{}; <-block }, 10) }()
 				<-reportStart
 				close(reportStart)
 			}
@@ -303,18 +226,13 @@ func Test_DepartmentDoProcessAllWorkers(t *testing.T) {
 				go func() {
 					dep.Do(func() {
 						done <- struct{}{}
-					})
+					}, 100000000)
+
 				}()
 			}
 
 			// Give a bit time to start workers
-			time.Sleep(1000000)
-
-			for dep.IsBusy() {
-			}
-
-			// Give a bit time to complete workers
-			time.Sleep(1000000)
+			time.Sleep(100000000)
 
 			// wait while all left assignments are done
 			actualDoneWorkers := actualWorkerDone
@@ -400,13 +318,13 @@ func Test_DepartmentClose(t *testing.T) {
 
 			for i := 0; i < startWorkerNumber; i++ {
 				reportStart := make(chan struct{})
-				go func() { reportStart <- struct{}{}; dep.Do(func() { started <- struct{}{}; <-block }) }()
+				go func() { reportStart <- struct{}{}; dep.Do(func() { started <- struct{}{}; <-block }, 10) }()
 				<-reportStart
 				close(reportStart)
 			}
 
 			// to be sure all workers reported their start
-			time.Sleep(100)
+			time.Sleep(1000)
 
 			go dep.Close()
 
